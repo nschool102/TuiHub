@@ -94,8 +94,8 @@ html, body {
     padding-bottom: calc(76px + var(--hub-safe-bottom));
 }
 
-.app-module { display: none; }
-.app-module.active { display: block; }
+.app-module { display: none !important; }
+.app-module.active { display: block !important; }
 
 .hub-page { display: none; }
 .hub-page.active { display: block; }

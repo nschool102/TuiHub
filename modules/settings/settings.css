@@ -37,7 +37,12 @@
     opacity: .8;
 }
 
-.settings-subsection { margin-bottom: 16px; }
+.settings-row-primary {
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--hub-border);
+    font-weight: 600;
+}
 .settings-subsection:last-of-type { margin-bottom: 0; }
 .settings-subtitle {
     font-size: 11px;

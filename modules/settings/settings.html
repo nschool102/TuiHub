@@ -10,15 +10,16 @@
     <div class="settings-card">
         <div class="settings-card-title">🎨 Thay đổi giao diện</div>
 
+        <div class="settings-row settings-row-primary">
+            <span>🌙 Chế độ tối (áp dụng cho toàn app)</span>
+            <label class="hub-switch">
+                <input type="checkbox" id="settings-dark-toggle">
+                <span class="hub-slider"></span>
+            </label>
+        </div>
+
         <div class="settings-subsection">
             <div class="settings-subtitle">💰 Quản lí gia đình</div>
-            <div class="settings-row">
-                <span>🌙 Chế độ tối</span>
-                <label class="hub-switch">
-                    <input type="checkbox" id="settings-finance-dark">
-                    <span class="hub-slider"></span>
-                </label>
-            </div>
             <div class="settings-row">
                 <span>Màu chủ đạo</span>
                 <select id="settings-finance-color" class="settings-select"></select>
@@ -30,13 +31,6 @@
             <div class="settings-row">
                 <span>Bộ màu</span>
                 <select id="settings-huyenhoc-theme" class="settings-select"></select>
-            </div>
-            <div class="settings-row">
-                <span>Chế độ</span>
-                <select id="settings-huyenhoc-mode" class="settings-select">
-                    <option value="dark">🌙 Dark</option>
-                    <option value="light">☀️ Light</option>
-                </select>
             </div>
         </div>
 

@@ -4,7 +4,7 @@
 }
 
 /*-- Reset & Cơ bản --*/
-#module-huyenhoc {
+#module-huyenhoc.active {
     background: var(--bg-color);
     color: var(--text-main);
     padding-top: var(--safe-area-top);

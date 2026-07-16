@@ -28,21 +28,39 @@ function syncHiddenControl(id, value, isCheckbox) {
 }
 
 // ---------- a. Thay đổi giao diện ----------
-function renderFinanceThemeControls() {
-    const darkToggle = document.getElementById('settings-finance-dark');
-    const colorSelect = document.getElementById('settings-finance-color');
-    if (!darkToggle || !colorSelect) return;
 
-    colorSelect.innerHTML = FINANCE_PALETTE.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+// [HUB] 1 công tắc Dark/Light DUY NHẤT áp dụng cho cả module Gia đình lẫn Huyền học
+// (trước đây mỗi module có 1 công tắc/dropdown riêng gây dư thừa và dễ lệch nhau).
+function renderUnifiedDarkToggle() {
+    const toggle = document.getElementById('settings-dark-toggle');
+    if (!toggle) return;
 
     const savedDark = localStorage.getItem('darkMode');
-    darkToggle.checked = savedDark !== null ? savedDark === 'true' : true;
+    const isDark = savedDark !== null ? savedDark === 'true' : true;
+    toggle.checked = isDark;
+
+    // Đồng bộ 1 lần lúc mở Settings, phòng trường hợp 2 module đang lệch trạng thái
+    // từ trước (vd Gia đình đang dark nhưng Huyền học đang light).
+    applyUnifiedDarkMode(isDark, /*silent*/ true);
+
+    toggle.addEventListener('change', () => applyUnifiedDarkMode(toggle.checked, false));
+}
+
+function applyUnifiedDarkMode(isDark, silent) {
+    syncHiddenControl('darkModeToggle', isDark, true);
+    if (window.HubModules.finance) window.HubModules.finance.toggleDarkMode(isDark);
+
+    syncHiddenControl('mode-selector', isDark ? 'dark' : 'light', false);
+    if (window.HubModules.huyenhoc) window.HubModules.huyenhoc.applyTheme();
+}
+
+function renderFinanceThemeControls() {
+    const colorSelect = document.getElementById('settings-finance-color');
+    if (!colorSelect) return;
+
+    colorSelect.innerHTML = FINANCE_PALETTE.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
     colorSelect.value = localStorage.getItem('themeColor') || '#FFC107';
 
-    darkToggle.addEventListener('change', () => {
-        syncHiddenControl('darkModeToggle', darkToggle.checked, true);
-        if (window.HubModules.finance) window.HubModules.finance.toggleDarkMode(darkToggle.checked);
-    });
     colorSelect.addEventListener('change', () => {
         syncHiddenControl('setting-color', colorSelect.value, false);
         if (window.HubModules.finance) window.HubModules.finance.applyTheme();
@@ -51,22 +69,16 @@ function renderFinanceThemeControls() {
 
 function renderHuyenhocThemeControls() {
     const themeSelect = document.getElementById('settings-huyenhoc-theme');
-    const modeSelect = document.getElementById('settings-huyenhoc-mode');
-    if (!themeSelect || !modeSelect) return;
+    if (!themeSelect) return;
 
     const themes = (window.HubModules.huyenhoc && window.HubModules.huyenhoc.themes) || {};
     themeSelect.innerHTML = Object.keys(themes).map(key => `<option value="${key}">${themes[key].name}</option>`).join('');
-
     themeSelect.value = localStorage.getItem('user-theme') || 'xanhla';
-    modeSelect.value = localStorage.getItem('user-mode') || 'dark';
 
-    function applyFromSettings() {
+    themeSelect.addEventListener('change', () => {
         syncHiddenControl('theme-selector', themeSelect.value, false);
-        syncHiddenControl('mode-selector', modeSelect.value, false);
         if (window.HubModules.huyenhoc) window.HubModules.huyenhoc.applyTheme();
-    }
-    themeSelect.addEventListener('change', applyFromSettings);
-    modeSelect.addEventListener('change', applyFromSettings);
+    });
 }
 
 // ---------- b. Đồng bộ dữ liệu ----------
@@ -138,6 +150,7 @@ function wireAppInfoButton() {
 }
 
 function settingsModuleInit() {
+    renderUnifiedDarkToggle();
     renderFinanceThemeControls();
     renderHuyenhocThemeControls();
     wireSyncButton();

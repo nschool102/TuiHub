@@ -1613,9 +1613,13 @@ function renderRemindersList(list) {
         return 0;
     });
 
+    // [HUB] Chỉ hiển thị 20 lịch nhắc gần nhất (theo ngày nhắc kế tiếp)
+    const totalCount = sortedList.length;
+    const limitedList = sortedList.slice(0, 20);
+
     let html = `<table class="history-table"><thead><tr><th>Nội dung</th><th>Ngày nhắc tiếp theo</th><th>Tần suất</th><th>Trạng thái</th></tr></thead><tbody>`;
 
-    sortedList.forEach(r => {
+    limitedList.forEach(r => {
         let freqText = formatFrequencyLabel(r);
 
         let displayDateSource = r.nextReminderDate || r.startDate;
@@ -1638,6 +1642,9 @@ function renderRemindersList(list) {
         </tr>`;
     });
     html += `</tbody></table>`;
+    if (totalCount > 20) {
+        html += `<p style="text-align: center; color: var(--stat-label-color); font-size: 0.8rem;">Hiển thị 20/ ${totalCount} lịch nhắc</p>`;
+    }
     container.innerHTML = html;
 } // end function renderRemindersList
 
@@ -1968,7 +1975,8 @@ function renderDiaryHistory() {
             <th>Chi tiết</th>
         </tr></thead><tbody>`;
         
-        sorted.slice(0, 50).forEach(entry => {
+        // [HUB] Chỉ hiển thị 20 bản ghi gần nhất (trước đây là 50)
+        sorted.slice(0, 20).forEach(entry => {
             html += `<tr>
                 <td style="white-space: nowrap; font-size: 0.85rem;">${entry.datetime}</td>
                 <td><span style="font-weight: 500; color: var(--theme-color);">${entry.place}</span></td>
@@ -1977,8 +1985,8 @@ function renderDiaryHistory() {
         });
         
         html += `</tbody></table>`;
-        if (sorted.length > 50) {
-            html += `<p style="text-align: center; color: var(--stat-label-color); font-size: 0.8rem;">Hiển thị 50/ ${sorted.length} bản ghi</p>`;
+        if (sorted.length > 20) {
+            html += `<p style="text-align: center; color: var(--stat-label-color); font-size: 0.8rem;">Hiển thị 20/ ${sorted.length} bản ghi</p>`;
         }
         container.innerHTML = html;
     });
