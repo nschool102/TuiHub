@@ -1,0 +1,96 @@
+
+#module-calculator {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --surface2: #16213e;
+  --card: #1f2940;
+  --accent: #6c63ff;
+  --accent2: #ff6584;
+  --accent3: #43e97b;
+  --text: #f0f0ff;
+  --text2: #9999bb;
+  --text3: #6666aa;
+  --border: rgba(108,99,255,0.2);
+  --input-bg: #0d0d1f;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+#module-calculator { min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Display', sans-serif; display: flex; flex-direction: column; }
+#module-calculator .hdr { background: var(--surface); padding: calc(var(--safe-top) + 12px) 16px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+#module-calculator .hdr-icon { font-size: 22px; }
+#module-calculator .hdr h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.3px; }
+#module-calculator .hdr-sub { font-size: 12px; color: var(--text3); margin-left: auto; }
+#module-calculator .tabs-wrap { background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-shrink: 0; }
+#module-calculator .tabs-wrap::-webkit-scrollbar { display: none; }
+#module-calculator .tabs { display: flex; flex-wrap: wrap; width: 100%; padding: 0 8px; gap: 4px;}
+#module-calculator .tab { padding: 10px 14px; font-size: 12px; font-weight: 500; color: var(--text3); white-space: nowrap; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+#module-calculator .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+#module-calculator .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--safe-bottom) + 16px); }
+#module-calculator .panel { display: none; padding: 16px; }
+#module-calculator .panel.active { display: block; }
+#module-calculator .card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+#module-calculator .card-title { font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+#module-calculator .field { margin-bottom: 12px; }
+#module-calculator .field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 5px; font-weight: 500; }
+#module-calculator .field input, #module-calculator .field select { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text); font-size: 15px; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+#module-calculator .field input:focus { border-color: var(--accent); }
+#module-calculator .field input[readonly] { color: var(--text2); }
+#module-calculator .field input.result-field { color: var(--accent3); font-weight: 600; font-size: 16px; }
+#module-calculator .result-grid { display: grid; gap: 10px; }
+#module-calculator .result-row { background: var(--surface2); border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+#module-calculator .result-label { font-size: 13px; color: var(--text2); }
+#module-calculator .result-val { font-size: 16px; font-weight: 700; color: var(--accent3); font-variant-numeric: tabular-nums; }
+#module-calculator .result-val.neg { color: var(--accent2); }
+#module-calculator .result-val.accent { color: var(--accent); }
+#module-calculator .calc-inputs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; margin-bottom: 14px; }
+#module-calculator .calc-op { font-size: 20px; font-weight: 700; color: var(--accent); text-align: center; padding-bottom: 10px; }
+#module-calculator .ops-list { display: grid; gap: 8px; }
+#module-calculator .op-row { background: var(--surface2); border-radius: 10px; padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+#module-calculator .op-name { font-size: 13px; color: var(--text2); }
+#module-calculator .op-val { font-size: 15px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+#module-calculator .op-frac { font-size: 11px; color: var(--text3); margin-top: 2px; text-align: right; }
+#module-calculator .date-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+#module-calculator input[type="date"], #module-calculator input[type="time"] { color-scheme: dark; }
+#module-calculator .divider { height: 1px; background: var(--border); margin: 14px 0; }
+#module-calculator .section-label { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 10px; }
+#module-calculator .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+#module-calculator .chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; background: var(--input-bg); border: 1px solid var(--border); color: var(--text2); transition: all 0.2s; }
+#module-calculator .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+#module-calculator .area-big { text-align: center; padding: 16px; }
+#module-calculator .area-num { font-size: 32px; font-weight: 800; color: var(--accent3); }
+#module-calculator .area-unit { font-size: 14px; color: var(--text2); margin-top: 2px; }
+/* Convert tab: two-col layout */
+#module-calculator .cv-row { display: grid; grid-template-columns: 1fr 36px 1fr; gap: 6px; align-items: end; margin-bottom: 8px; }
+#module-calculator .cv-mid { display: flex; align-items: center; justify-content: center; padding-bottom: 12px; font-size: 18px; color: var(--accent); }
+#module-calculator .cv-sel { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; color: var(--text); font-size: 12px; outline: none; -webkit-appearance: none; margin-top: 4px; }
+#module-calculator .cv-label { font-size: 11px; color: var(--text3); margin-bottom: 3px; font-weight: 600; }
+#module-calculator .sys-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+#module-calculator .sys-si { background: rgba(67,233,123,0.15); color: var(--accent3); }
+#module-calculator .sys-en { background: rgba(255,101,132,0.15); color: var(--accent2); }
+#module-calculator .tz-result { background: var(--surface2); border-radius: 10px; padding: 12px 14px; margin-top: 8px; border: 1px solid var(--border); }
+#module-calculator .tz-city { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+#module-calculator .tz-time { font-size: 22px; font-weight: 700; color: var(--accent3); }
+#module-calculator .tz-date { font-size: 11px; color: var(--text2); margin-top: 2px; }
+#module-calculator .tz-grid { display: grid; gap: 8px; margin-top: 8px; }
+
+
+/* ===== [HUB] CSS mới: danh sách input động cho tab Cơ bản (tối đa 10 số) ===== */
+#module-calculator .basic-inputs-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+#module-calculator .basic-input-row label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 5px; font-weight: 500; }
+#module-calculator .basic-input-row-inner { display: flex; gap: 8px; align-items: center; }
+#module-calculator .basic-input-row-inner input { flex: 1; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text); font-size: 15px; outline: none; -webkit-appearance: none; }
+#module-calculator .basic-input-row-inner input:focus { border-color: var(--accent); }
+#module-calculator .basic-remove-btn { flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--border); color: var(--accent2); font-size: 14px; cursor: pointer; }
+#module-calculator .basic-add-btn { width: 100%; padding: 10px; margin-top: 4px; background: var(--input-bg); border: 1px dashed var(--border); border-radius: 10px; color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; }
+#module-calculator .basic-add-btn:disabled { color: var(--text3); cursor: not-allowed; border-style: solid; }
+#module-calculator .copy-hint { font-weight: 400; text-transform: none; color: var(--text3); font-size: 11px; letter-spacing: 0; }
+#module-calculator .op-val.copyable, #module-calculator .result-val.copyable { cursor: pointer; }
+#module-calculator .op-val.copyable:active, #module-calculator .result-val.copyable:active { opacity: 0.6; }
+
+/* ===== [HUB] CSS mới: nhóm múi giờ theo châu lục, 2 cột ===== */
+#module-calculator .tz-region-group { margin-top: 14px; }
+#module-calculator .tz-region-title { font-size: 11px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+#module-calculator .tz-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 380px) {
+  #module-calculator .tz-grid-2col { grid-template-columns: 1fr; }
+}

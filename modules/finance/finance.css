@@ -82,12 +82,13 @@
     background-color: var(--secondary-bg);
     color: var(--text-color);
     transition: background-color 0.3s ease, color 0.3s ease;
+    padding-bottom: calc(95px + env(safe-area-inset-bottom));
 }
 
 /* ==========================================================================
    4. HEADER
    ========================================================================== */
-.header {
+#module-finance .header {
     background-color: var(--header-bg);
     color: var(--header-text);
     padding: 15px;
@@ -104,7 +105,7 @@
 /* ==========================================================================
    5. NAVIGATION TABS (Floating Menu)
    ========================================================================== */
-.nav-tabs {
+#module-finance .nav-tabs {
     position: fixed;
     bottom: 15px;
     left: 50%;
@@ -122,7 +123,7 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.tab-btn {
+#module-finance .tab-btn {
     background: none;
     border: none;
     color: var(--tab-color);
@@ -135,7 +136,7 @@
     transition: all 0.3s ease;
 }
 
-.tab-btn.active {
+#module-finance .tab-btn.active {
     opacity: 1;
     color: var(--tab-active);
     font-weight: bold;
@@ -145,21 +146,21 @@
 /* ==========================================================================
    6. TAB CONTENT
    ========================================================================== */
-.tab-content {
+#module-finance .tab-content {
     display: none;
     padding: 15px;
     max-width: 600px;
     margin: 0 auto;
 }
 
-.tab-content.active {
+#module-finance .tab-content.active {
     display: block;
 }
 
 /* ==========================================================================
    7. CARDS
    ========================================================================== */
-.card {
+#module-finance .card {
     background-color: var(--card-bg);
     border-radius: 10px;
     padding: 18px;
@@ -169,7 +170,7 @@
     transition: all 0.3s ease;
 }
 
-.card h3 {
+#module-finance .card h3 {
     margin-top: 0;
     margin-bottom: 15px;
     color: var(--text-color);
@@ -178,11 +179,11 @@
 /* ==========================================================================
    8. FORM
    ========================================================================== */
-.form-group {
+#module-finance .form-group {
     margin-bottom: 15px;
 }
 
-.form-group label {
+#module-finance .form-group label {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
@@ -190,7 +191,7 @@
     color: var(--text-color);
 }
 
-.form-control {
+#module-finance .form-control {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--border-color);
@@ -203,14 +204,14 @@
     font-family: inherit;
 }
 
-input[type="datetime-local"].form-control {
+#module-finance input[type="datetime-local"].form-control {
     display: block;
     -webkit-appearance: none;
     appearance: none;
     min-height: 47px;
 }
 
-.form-control:focus {
+#module-finance .form-control:focus {
     outline: none;
     border-color: var(--theme-color);
 }
@@ -218,7 +219,7 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    9. BUTTONS
    ========================================================================== */
-.btn {
+#module-finance .btn {
     background-color: var(--theme-color) !important;
     color: var(--text-on-theme) !important;
     border: none;
@@ -231,7 +232,7 @@ input[type="datetime-local"].form-control {
     transition: all 0.2s ease;
 }
 
-.btn:active {
+#module-finance .btn:active {
     opacity: 0.9;
     transform: scale(0.98);
 }
@@ -239,14 +240,14 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    10. FAMILY GRID
    ========================================================================== */
-.family-grid {
+#module-finance .family-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important; 
     gap: 10px !important;
     width: 100%;
 }
 
-.member-btn {
+#module-finance .member-btn {
     background-color: var(--theme-color);
     color: var(--text-on-theme);
     border: none;
@@ -262,7 +263,7 @@ input[type="datetime-local"].form-control {
     text-overflow: ellipsis; 
 }
 
-.member-btn:active {
+#module-finance .member-btn:active {
     opacity: 0.9;
     transform: scale(0.98);
 }
@@ -270,7 +271,7 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    11. MODAL
    ========================================================================== */
-.modal {
+#module-finance .modal {
     display: none;
     position: fixed;
     top: 0;
@@ -289,7 +290,7 @@ input[type="datetime-local"].form-control {
     to { opacity: 1; }
 }
 
-.modal-content {
+#module-finance .modal-content {
     background-color: var(--modal-content-bg);
     color: var(--modal-text);
     padding: 20px;
@@ -313,7 +314,7 @@ input[type="datetime-local"].form-control {
     }
 }
 
-.modal-close {
+#module-finance .modal-close {
     position: absolute;
     top: 10px;
     right: 15px;
@@ -327,7 +328,7 @@ input[type="datetime-local"].form-control {
     border-radius: 4px;
 }
 
-.modal-close:hover {
+#module-finance .modal-close:hover {
     transform: rotate(90deg);
     background-color: var(--secondary-bg);
 }
@@ -335,29 +336,29 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    12. INFO ROWS / TABLES
    ========================================================================== */
-.info-row {
+#module-finance .info-row {
     padding: 12px 8px;
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
 }
 
-.info-row:hover {
+#module-finance .info-row:hover {
     background-color: var(--secondary-bg);
 }
 
-.info-label {
+#module-finance .info-label {
     font-size: 0.85rem;
     color: var(--stat-label-color);
 }
 
-.info-value {
+#module-finance .info-value {
     font-size: 1rem;
     font-weight: 500;
     margin-top: 2px;
     color: var(--text-color);
 }
 
-.history-table {
+#module-finance .history-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
@@ -365,23 +366,23 @@ input[type="datetime-local"].form-control {
     margin-top: 5px;
 }
 
-.history-table th, .history-table td {
+#module-finance .history-table th, #module-finance .history-table td {
     padding: 10px 8px;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
 
-.history-table th {
+#module-finance .history-table th {
     font-weight: bold;
     color: var(--stat-label-color);
     background-color: var(--secondary-bg);
 }
 
-.history-table td.date-col {
+#module-finance .history-table td.date-col {
     white-space: nowrap;
 }
 
-.history-table td.amount-col {
+#module-finance .history-table td.amount-col {
     text-align: right;
     font-weight: bold;
     white-space: nowrap;
@@ -390,7 +391,7 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    13. SCROLL TO TOP BUTTON
    ========================================================================== */
-.scroll-top {
+#module-finance .scroll-top {
     position: fixed;
     bottom: calc(100px + env(safe-area-inset-bottom)); 
     right: 20px;
@@ -411,25 +412,25 @@ input[type="datetime-local"].form-control {
     transition: all 0.3s ease;
 }
 
-.scroll-top.show {
+#module-finance .scroll-top.show {
     display: flex;
 }
 
-.scroll-top:hover {
+#module-finance .scroll-top:hover {
     transform: scale(1.1);
 }
 
 /* ==========================================================================
    14. CHART & STATISTICS
    ========================================================================== */
-.chart-container {
+#module-finance .chart-container {
     position: relative;
     margin: 15px auto;
     height: 260px;
     width: 100%;
 }
 
-.stat-row {
+#module-finance .stat-row {
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
@@ -437,12 +438,12 @@ input[type="datetime-local"].form-control {
     color: var(--text-color);
 }
 
-.stat-label {
+#module-finance .stat-label {
     color: var(--stat-label-color);
     opacity: 0.7;
 }
 
-.stat-value {
+#module-finance .stat-value {
     font-weight: bold;
     color: var(--text-color);
 }
@@ -450,7 +451,7 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    15. ALERT BOX
    ========================================================================== */
-.alert-box {
+#module-finance .alert-box {
     background-color: rgba(244, 67, 54, 0.08);
     border-left: 4px solid var(--danger-color);
     padding: 12px;
@@ -467,27 +468,27 @@ input[type="datetime-local"].form-control {
 /* ==========================================================================
    16. DARK MODE TOGGLE SWITCH
    ========================================================================== */
-.theme-switch-wrapper {
+#module-finance .theme-switch-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px 0;
 }
 
-.theme-switch {
+#module-finance .theme-switch {
     position: relative;
     display: inline-block;
     width: 50px;
     height: 28px;
 }
 
-.theme-switch input {
+#module-finance .theme-switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.slider {
+#module-finance .slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -499,7 +500,7 @@ input[type="datetime-local"].form-control {
     border-radius: 34px;
 }
 
-.slider:before {
+#module-finance .slider:before {
     position: absolute;
     content: "";
     height: 20px;
@@ -511,25 +512,25 @@ input[type="datetime-local"].form-control {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+#module-finance input:checked + .slider {
     background-color: var(--theme-color);
 }
 
-input:checked + .slider:before {
+#module-finance input:checked + .slider:before {
     transform: translateX(22px);
 }
 
-.theme-text { color: var(--theme-color) !important; }
-.theme-bg { background-color: var(--theme-color) !important; color: var(--text-on-theme) !important; }
+#module-finance .theme-text { color: var(--theme-color) !important; }
+#module-finance .theme-bg { background-color: var(--theme-color) !important; color: var(--text-on-theme) !important; }
 
 /* ==========================================================================
    17. APP INFO MODAL
    ========================================================================== */
-.app-info-modal {
+#module-finance .app-info-modal {
     margin-top: 5px;
 }
 
-.info-row-app {
+#module-finance .info-row-app {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -539,18 +540,18 @@ input:checked + .slider:before {
     transition: background-color 0.2s ease;
 }
 
-.info-row-app:hover {
+#module-finance .info-row-app:hover {
     background-color: var(--secondary-bg);
     border-radius: 4px;
 }
 
-.info-label-app {
+#module-finance .info-label-app {
     color: var(--stat-label-color);
     font-weight: 400;
     opacity: 0.8;
 }
 
-.info-value-app {
+#module-finance .info-value-app {
     font-weight: 500;
     color: var(--text-color);
     text-align: right;
@@ -558,18 +559,18 @@ input:checked + .slider:before {
     word-break: break-word;
 }
 
-#btn-app-info {
+#module-finance #btn-app-info {
     transition: all 0.3s ease;
     border: 1px solid transparent;
 }
 
-#btn-app-info:hover {
+#module-finance #btn-app-info:hover {
     border-color: var(--theme-color);
     background-color: var(--secondary-bg) !important;
     transform: scale(1.02);
 }
 
-#btn-app-info:active {
+#module-finance #btn-app-info:active {
     transform: scale(0.98);
 }
 
@@ -577,46 +578,45 @@ input:checked + .slider:before {
    18. RESPONSIVE
    ========================================================================== */
 @media (max-width: 480px) {
-    .header { 
+    #module-finance .header { 
         font-size: 1rem; 
         padding: 12px; 
     }
     
-    .tab-btn { 
+    #module-finance .tab-btn { 
         font-size: 0.75rem; 
         padding: 12px 3px; 
     }
     
-    .modal-content { 
+    #module-finance .modal-content { 
         width: 95% !important; 
         padding: 15px !important;
         max-height: 90vh !important;
     }
     
-    .family-grid { 
+    #module-finance .family-grid { 
         grid-template-columns: repeat(2, 1fr) !important; 
     }
     
-    .info-row-app {
+    #module-finance .info-row-app {
         font-size: 0.8rem;
         padding: 8px 2px;
     }
     
-    .info-value-app {
+    #module-finance .info-value-app {
         max-width: 50%;
         font-size: 0.8rem;
     }
     
-    .chart-container {
+    #module-finance .chart-container {
         height: 200px;
     }
     
-    .history-table {
+    #module-finance .history-table {
         font-size: 0.75rem;
     }
     
-    .history-table th, 
-    .history-table td {
+    #module-finance .history-table th, #module-finance .history-table td {
         padding: 6px 4px;
     }
 }
@@ -624,7 +624,7 @@ input:checked + .slider:before {
 /* ==========================================================================
    19. SUMMARY HEADER - TỔNG THU/CHI TRONG THÁNG
    ========================================================================== */
-.summary-header {
+#module-finance .summary-header {
     display: flex;
     align-items: center;
     background: linear-gradient(135deg, var(--card-bg) 0%, var(--secondary-bg) 100%);
@@ -636,22 +636,22 @@ input:checked + .slider:before {
     transition: all 0.3s ease;
 }
 
-.summary-header:hover {
+#module-finance .summary-header:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.summary-icon {
+#module-finance .summary-icon {
     font-size: 2.2rem;
     margin-right: 16px;
     line-height: 1;
 }
 
-.summary-info {
+#module-finance .summary-info {
     flex: 1;
 }
 
-.summary-label {
+#module-finance .summary-label {
     font-size: 0.8rem;
     color: var(--stat-label-color);
     font-weight: 500;
@@ -660,7 +660,7 @@ input:checked + .slider:before {
     margin-bottom: 4px;
 }
 
-.summary-amount {
+#module-finance .summary-amount {
     font-size: 1.6rem;
     font-weight: 700;
     line-height: 1.2;
@@ -674,82 +674,82 @@ input:checked + .slider:before {
 
 /* Responsive */
 @media (max-width: 480px) {
-    .summary-header {
+    #module-finance .summary-header {
         padding: 12px 16px;
     }
     
-    .summary-icon {
+    #module-finance .summary-icon {
         font-size: 1.6rem;
         margin-right: 12px;
     }
     
-    .summary-label {
+    #module-finance .summary-label {
         font-size: 0.7rem;
     }
     
-    .summary-amount {
+    #module-finance .summary-amount {
         font-size: 1.2rem;
     }
 }
 /* end SUMMARY HEADER */
 
 /* Thêm vào cuối file */
-textarea.form-control {
+#module-finance textarea.form-control {
     resize: vertical;
     min-height: 80px;
     font-family: inherit;
 }
 
-#diary-custom-place-group {
+#module-finance #diary-custom-place-group {
     transition: all 0.3s ease;
 }
 
 /* Thêm vào cuối file */
-#statTimeModal .modal-content {
+#module-finance #statTimeModal .modal-content {
     max-width: 550px;
 }
 
-#statTimeModal .chart-container {
+#module-finance #statTimeModal .chart-container {
     height: 180px;
     margin: 5px auto;
 }
 
-#statTimeModal .stat-row {
+#module-finance #statTimeModal .stat-row {
     padding: 8px 0;
 }
 
-#btn-stat-time {
+#module-finance #btn-stat-time {
     transition: all 0.3s ease;
 }
 
-#btn-stat-time:hover {
+#module-finance #btn-stat-time:hover {
     transform: scale(1.02);
     box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
 }
 
 @media (max-width: 480px) {
-    #statTimeModal .chart-container {
+    #module-finance #statTimeModal .chart-container {
         height: 150px;
     }
     
-    #statTimeModal .modal-content {
+    #module-finance #statTimeModal .modal-content {
         padding: 15px;
     }
     
-    #statTimeModal div[style*="grid-template-columns"] {
+    #module-finance #statTimeModal div[style*="grid-template-columns"] {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 5px;
     }
     
-    #statTimeModal div[style*="grid-template-columns"] > div {
+    #module-finance #statTimeModal div[style*="grid-template-columns"] > div {
         padding: 8px !important;
     }
     
-    #statTimeModal div[style*="grid-template-columns"] > div div:first-child {
+    #module-finance #statTimeModal div[style*="grid-template-columns"] > div div:first-child {
         font-size: 0.6rem !important;
     }
     
-    #statTimeModal div[style*="grid-template-columns"] > div div:nth-child(2) {
+    #module-finance #statTimeModal div[style*="grid-template-columns"] > div div:nth-child(2) {
         font-size: 1.1rem !important;
     }
 }

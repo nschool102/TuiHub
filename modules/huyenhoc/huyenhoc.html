@@ -1,0 +1,158 @@
+<!-- =========================================================================
+     MODULE: HUYỀN HỌC (nguồn gốc: repo KingDitch)
+     ========================================================================= -->
+<div id="module-huyenhoc" class="app-module" data-theme="dark">
+
+<div class="app">
+
+<!-- TAB MAI HOA -->
+        <div class="panel active" id="maihoa-container">
+            <div id="result-display"></div>
+        </div>
+    <!-- end of TAB MAI HOA  -->
+
+    <!-- TAB FULL CUSTOM OF DỊCH -->
+        <div class="panel" id="fullcustom-container">
+            <div id="form-area">
+                <!-- SECTION 1: THOI GIAN -->
+                    <div class="section-box">
+                        <div class="section-title">THỜI GIAN</div>
+                        <label class="checkbox-line">
+                          <input type="checkbox" id="fc-now">
+                          Bây giờ
+                        </label>
+                        <div class="time-grid">
+                          <select id="fc-hour">
+                            
+                          </select>
+                          <select id="fc-day"></select>
+                          <select id="fc-month"></select>
+                          <select id="fc-year"></select>
+                        </div>
+                    </div> 
+                <!-- end of SECTION 1: THOI GIAN -->
+
+                <!-- SECTION 2: PHUONG PHAP --> 
+                    <div class="section-box">
+                        <div class="section-title">PHƯƠNG PHÁP LẬP QUẺ</div>
+                        <select id="fc-method">
+                            <option value="MaiHoa">Mai Hoa</option>
+                            <option value="LucHao">Lục Hào</option>
+                        </select>
+                    </div> 
+                <!-- end of SECTION 2: PHUONG PHAP -->
+
+                <!-- SECTION 3: LUC HAO --> 
+                    <div class="section-box" id="lucHaoBox" style="display:none;">
+                        <div class="section-title">QUẺ LỤC HÀO</div>
+                        <div class="double-grid">
+                            <div>
+                                <label>Quái Thượng</label>
+                                <select id="fc-up">
+                                    <option value="111">1. Càn Thiên</option>
+                                    <option value="110">2. Đoài Trạch</option>
+                                    <option value="101">3. Li Hỏa</option>
+                                    <option value="100">4. Chấn Lôi</option>
+                                    <option value="011">5. Tốn Phong</option>
+                                    <option value="010">6. Khảm Thủy</option>
+                                    <option value="001">7. Cấn Sơn</option>
+                                    <option value="000">8. Khôn Địa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Quái Hạ</label>
+                                <select id="fc-down">
+                                    <option value="111">1. Càn Thiên</option>
+                                    <option value="110">2. Đoài Trạch</option>
+                                    <option value="101">3. Li Hỏa</option>
+                                    <option value="100">4. Chấn Lôi</option>
+                                    <option value="011">5. Tốn Phong</option>
+                                    <option value="010">6. Khảm Thủy</option>
+                                    <option value="001">7. Cấn Sơn</option>
+                                    <option value="000">8. Khôn Địa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="hao-grid">
+                            <label><input type="checkbox" class="hao-cb" value="1"> Hào 1</label>
+                            <label><input type="checkbox" class="hao-cb" value="2"> Hào 2</label>
+                            <label><input type="checkbox" class="hao-cb" value="3"> Hào 3</label>
+                            <label><input type="checkbox" class="hao-cb" value="4"> Hào 4</label>
+                            <label><input type="checkbox" class="hao-cb" value="5"> Hào 5</label>
+                            <label><input type="checkbox" class="hao-cb" value="6"> Hào 6</label>
+                        </div>
+
+                        <button class="submit-btn" id="btnLucHao">Submit Quẻ Lục Hào</button>
+                    </div> 
+                <!-- end of SECTION 3: LUC HAO -->
+
+                <!-- SECTION 4: MAI HOA --> 
+                    <div class="section-box" id="maiHoaBox">
+                        <div class="section-title">QUẺ MAI HOA</div>
+                        <button class="submit-btn" id="btnMaiHoa">Submit Quẻ Mai Hoa</button>
+                    </div> 
+                <!-- end of SECTION 4: MAI HOA -->
+
+                <!-- SECTION 5: RESULT -->
+                    <div id="custom-container"></div>
+                <!-- end of SECTION 5: RESULT -->
+            </div>
+        </div>
+    <!-- end of TAB FULL CUSTOM OF DỊCH -->
+
+
+    <!-- TAB TAROT -->
+        <div class="panel" id="tarot-container">
+            <div class="section-box"><h3>🔮 Tarot</h3><p>Tính năng đang phát triển...</p></div>
+        </div>
+    <!-- end of TAB TAROT -->
+
+    
+    <!-- TAB DECISION -->
+        <div class="panel" id="decision-container">
+            <div style="display:flex; flex-direction:column; align-items:center; gap: 25px;" class="section-box">
+                <button id="btn-draw" class="submit-btn">🎲 Draw Decision</button>
+                
+                <div id="decision-result">
+                    <h1 id="res-detail">Nhấn nút để lấy quyết định...</h1>
+                </div>
+    
+            </div>
+            
+        </div>
+    <!-- end of TAB DECISION -->
+
+</div>
+
+<!-- ---------------------------------------------------------------------
+     TẠM ẨN: khối Settings (chọn theme màu) gốc của module Huyền học.
+     clientSide.js vẫn cần các id này tồn tại để gắn sự kiện.
+     Sẽ được BƯỚC 4 (Settings toàn app) tái sử dụng.
+     --------------------------------------------------------------------- -->
+<div id="huyenhoc-legacy-settings" style="display:none;" aria-hidden="true">
+
+<!-- TAB SETTINGS -->
+        <div class="panel" id="settings-container">
+            <div class="section-box">
+                <div class="section-title">⚙️ CÀI ĐẶT GIAO DIỆN</div>
+                <div class="theme-controls">
+                    <select id="theme-selector">
+                        </select>
+                    
+                    <select id="mode-selector">
+                        <option value="dark">🌙 Dark</option>
+                        <option value="light">☀️ Light</option>
+                    </select>
+                    
+                    <button onclick="HubModules.huyenhoc.applyTheme()">Apply Theme</button>
+                </div>
+            </div>
+        </div>
+    <!-- end of TAB SETTINGS -->
+
+</div>
+<!-- end TẠM ẨN huyenhoc-legacy-settings -->
+
+</div>
+<!-- end MODULE: HUYỀN HỌC -->

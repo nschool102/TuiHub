@@ -138,7 +138,47 @@ html, body {
     font-size: 13px;
 }
 
-/* ---------- Responsive: màn rộng thì navbar cấp 1 chuyển sang thanh trên ---------- */
+/* ---------- MODAL Ở CẤP SHELL (vd: Thông tin ứng dụng) ---------- */
+.hub-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+}
+.hub-modal.show { display: flex; }
+.hub-modal-content {
+    width: 90%;
+    max-width: 400px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: var(--hub-surface);
+    border: 1px solid var(--hub-border);
+    border-radius: var(--hub-radius);
+    padding: 20px;
+    position: relative;
+}
+.hub-modal-title { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 16px; color: var(--hub-accent); }
+.hub-modal-close {
+    position: absolute; top: 12px; right: 12px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--hub-surface-2); border: none; color: var(--hub-text);
+    font-size: 18px; cursor: pointer;
+}
+.hub-info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--hub-border); font-size: 13px; }
+.hub-info-label { color: var(--hub-text-dim); }
+.hub-info-value { color: var(--hub-text); font-weight: 600; }
+.hub-btn {
+    width: 100%; margin-top: 14px; padding: 11px;
+    background: var(--hub-accent); color: var(--hub-accent-text);
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.hub-btn.danger { background: #f44336; color: #fff; }
+.hub-btn.secondary { background: var(--hub-surface-2); color: var(--hub-text); border: 1px solid var(--hub-border); }
+
 @media (min-width: 860px) {
     #hub-bottomnav {
         position: sticky;

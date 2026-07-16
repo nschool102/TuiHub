@@ -2428,14 +2428,14 @@ function resetAppCompletely() {
 
     let box = document.createElement('div');
     box.className = "card";
-    box.style = "width:90%;max-width:320px;padding:20px;text-align:center;background:var(--card-bg);color:var(--text-color);";
+    box.style = "width:90%;max-width:320px;padding:20px;text-align:center;background:#1e1e1e;color:#e0e0e0;border-radius:14px;";
     box.innerHTML = `
-        <h3 style="margin-top:0;color:var(--danger-color);">🔒 Xác Thực Xóa App</h3>
+        <h3 style="margin-top:0;color:#f44336;">🔒 Xác Thực Xóa App</h3>
         <p style="font-size:13px;opacity:0.8;">Vui lòng nhập mật khẩu xác nhận định danh:</p>
-        <input type="password" id="secure-reset-pass" class="form-control" style="text-align:center;margin-bottom:15px;" placeholder="••••••••">
+        <input type="password" id="secure-reset-pass" style="text-align:center;margin-bottom:15px;width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#0d0d0d;color:#e0e0e0;" placeholder="••••••••">
         <div style="display:flex;gap:10px;">
-            <button class="btn" id="btn-cancel-reset" style="background:#555 !important;flex:1;">Hủy</button>
-            <button class="btn" id="btn-confirm-reset" style="background:var(--danger-color) !important;flex:1;">Xóa Sạch</button>
+            <button id="btn-cancel-reset" style="background:#555;color:#fff;flex:1;border:none;border-radius:8px;padding:10px;cursor:pointer;">Hủy</button>
+            <button id="btn-confirm-reset" style="background:#f44336;color:#fff;flex:1;border:none;border-radius:8px;padding:10px;cursor:pointer;">Xóa Sạch</button>
         </div>
     `;
     mask.appendChild(box);
@@ -2843,10 +2843,19 @@ function setupStatTimeEvents() {
 
 // end THỐNG KÊ THỜI GIAN
 
-// [HUB] Expose API cho shell.js gọi
+// [HUB] Expose API cho shell.js gọi + cho module Settings toàn app tái sử dụng
+// logic theme/đồng bộ/reset/app-info gốc của Tui (tránh viết lại từ đầu).
 window.HubModules.finance = {
     init: financeModuleInit,
-    switchTab: switchTab
+    switchTab: switchTab,
+    toggleDarkMode: toggleDarkMode,
+    applyTheme: applyTheme,
+    loadTheme: loadTheme,
+    syncAllDataFromSheet: syncAllDataFromSheet,
+    resetAppCompletely: resetAppCompletely,
+    openAppInfoModal: openAppInfoModal,
+    closeAppInfoModal: closeAppInfoModal,
+    updateAppInfo: updateAppInfo
 };
 
 })();

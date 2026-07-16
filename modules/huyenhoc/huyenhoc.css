@@ -1,0 +1,347 @@
+/*-- Thiết lập biến màu (Theme Variables) --*/
+#module-huyenhoc {
+    --safe-area-top: env(safe-area-inset-top);
+}
+
+/*-- Reset & Cơ bản --*/
+#module-huyenhoc {
+    background: var(--bg-color);
+    color: var(--text-main);
+    padding-top: var(--safe-area-top);
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s ease;
+}
+
+/*-- Tab Navigation --*/
+#module-huyenhoc .tabs { 
+    background: var(--panel-color);
+    display: flex; 
+    flex-wrap: wrap;        /* Cho phép xuống dòng khi hết chỗ */
+    border-bottom: 1px solid #2d3e34; 
+}
+
+#module-huyenhoc .tab { 
+    color: #8fa398;
+    flex: 1 1 20%;         /* Mỗi tab chiếm tối thiểu 45% chiều rộng (để được 2 tab/hàng) */
+    padding: 15px; 
+    text-align: center; 
+    cursor: pointer; 
+    border-bottom: 3px solid transparent; 
+    white-space: nowrap;    /* Giữ chữ của từng tab đi chung với nhau */
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+#module-huyenhoc .tab.active { 
+    background: #152019;
+    color: var(--accent-color); 
+    border-bottom: 3px solid var(--accent-color); 
+    font-weight: bold;
+}
+
+/*-- Panels --*/
+#module-huyenhoc .panel { display: none; }
+#module-huyenhoc .panel.active { display: block; padding: 15px; }
+
+/*-- Layout Content --*/
+#module-huyenhoc .app { max-width: 1100px; margin: auto; width: 100%; }
+
+#module-huyenhoc .header-info, #module-huyenhoc .que-box, #module-huyenhoc .section-box { 
+    background: var(--panel-color); 
+    border: 1px solid #2d3e34;
+    border-radius: 12px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
+    padding: 20px;
+    width: 100%;
+}
+
+/*-- Table & Badges --*/
+#module-huyenhoc .table { background: var(--panel-color); width: 100%; border-collapse: collapse; margin-top: 10px; border-radius: 10px; overflow: hidden; width: 100%}
+#module-huyenhoc .table th { background: var(--accent-color); color: white; padding: 10px; }
+#module-huyenhoc .table td { padding: 10px; text-align: center; color: var(--text-main); }
+#module-huyenhoc .table th:nth-child(7), #module-huyenhoc .table td:nth-child(7) { border-left: 2px solid #2d3e34; }
+
+/* Áp dụng màu cho tất cả các thẻ td nằm bên trong một tr có class .dong */
+#module-huyenhoc tr.dong td {
+    color: #FF0000 !important;
+    background-color: #fff !important;
+    font-weight: bold !important;
+}
+
+#module-huyenhoc .khong-badge { background: #ab4622; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+
+/*-- Màu Ngũ Hành (Cố định) --*/
+#module-huyenhoc .moc { color: #1b9d48; font-weight: bold; }
+#module-huyenhoc .hoa { color: #d32f2f; font-weight: bold; }
+#module-huyenhoc .tho { color: #811B9D; font-weight: bold; }
+#module-huyenhoc .kim { color: #B6A32B; font-weight: bold; }
+#module-huyenhoc .thuy { color: #2a1b9d; font-weight: bold; }
+
+/*-- Forms & Buttons --*/
+#module-huyenhoc select { background: var(--panel-color); color: var(--text-main); padding: 10px; border: 1px solid #2d3e34; border-radius: 8px;}
+#module-huyenhoc .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
+#module-huyenhoc .time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
+#module-huyenhoc .double-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+#module-huyenhoc .hao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+#module-huyenhoc .submit-btn, #module-huyenhoc .btn-copy { 
+    background: var(--accent-color) !important; 
+    color: #fff !important; 
+    border: none; 
+    border-radius: 10px; 
+    padding: 12px; 
+    cursor: pointer; 
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+/*-- Utilities --*/
+#module-huyenhoc textarea { background: var(--panel-color); color: var(--text-main); border: 1px solid #2d3e34; width: 100%; padding: 10px; }
+#module-huyenhoc ::-webkit-scrollbar { width: 8px; }
+#module-huyenhoc ::-webkit-scrollbar-track { background: var(--bg-color); }
+#module-huyenhoc ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+
+/*-- Footer --*/
+#module-huyenhoc footer {
+    padding: 15px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--panel-color);
+    background: var(--accent-color);
+    border-top: 1px solid #2d3e34;
+    margin-top: auto;
+}
+
+/* Ép toàn bộ header chứa 3 box luôn nằm trên 1 dòng */
+#module-huyenhoc #headerBox.header {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important; /* Quan trọng: cấm xuống dòng */
+    gap: 8px !important;           /* Khoảng cách thu nhỏ lại cho vừa màn hình đt */
+    overflow-x: hidden;           /* Tránh bị tràn ngang màn hình */
+}
+
+/* Ép các box chiếm tỷ lệ đều nhau */
+#module-huyenhoc #headerBox.header .que-box {
+    flex: 1 1 0px !important;    /* Tự động chia đều chiều rộng */
+    min-width: 0 !important;      /* Cho phép box co nhỏ nếu cần thiết */
+    padding: 8px 5px !important;  /* Giảm padding để chữ không bị tràn */
+}
+
+/*-- Responsive (Tất cả thiết bị di động) --*/
+@media (max-width: 600px) {
+    /* 1. Layout tổng thể */
+    #module-huyenhoc .content { display: flex; flex-direction: column; align-items: center; }
+    #module-huyenhoc .section-box, #module-huyenhoc .table, #module-huyenhoc .header-info { margin-left: auto; margin-right: auto; }
+
+    /* 2. Tinh chỉnh font chữ và các thành phần nhỏ (cho màn hình <= 480px) */
+    @media (max-width: 480px) {
+        #module-huyenhoc .que-name { font-size: 13px !important; }
+        #module-huyenhoc .donut { width: 45px !important; height: 45px !important; }
+        #module-huyenhoc .donut::before { width: 35px !important; height: 35px !important; }
+    }
+}
+
+/*-- Khôi phục Donut (Vòng tròn điểm số) --*/
+#module-huyenhoc .score-wrap { 
+    display: flex; 
+    justify-content: center; 
+    margin: 6px 0; 
+}
+
+#module-huyenhoc .donut { 
+    width: 60px; height: 60px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    background: var(--accent-color); /* Màu của donut dựa theo theme */
+}
+
+#module-huyenhoc .donut::before { 
+    background: var(--panel-color); /* Nền trong donut là màu panel */
+    content: ""; 
+    width: 45px; height: 45px; 
+    border-radius: 50%; 
+    position: absolute; 
+}
+#module-huyenhoc .donut span { 
+    position: relative; 
+    font-weight: bold; font-size: 12px; 
+    color: var(--text-main);
+}
+
+/*-- Khôi phục Emoticon Ngũ Hành --*/
+#module-huyenhoc .moc::before { content: "🌿"; margin-right: 6px; display: inline-block; }
+#module-huyenhoc .hoa::before { content: "🔥"; margin-right: 6px; display: inline-block; }
+#module-huyenhoc .tho::before { content: "⛰️"; margin-right: 6px; display: inline-block; }
+#module-huyenhoc .kim::before { content: "💰"; margin-right: 6px; display: inline-block; }
+#module-huyenhoc .thuy::before { content: "💧"; margin-right: 6px; display: inline-block; }
+
+/*-- Nút Apply theme - để nó k bị lạc quẻ so với theme Chính --*/
+#module-huyenhoc .theme-controls button {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* =========================
+   MOBILE RESPONSIVE FIX
+   ========================= */
+@media (max-width: 768px) {
+
+    /* Layout tổng */
+    #module-huyenhoc {
+        font-size: 14px;
+    }
+
+    #module-huyenhoc .app, #module-huyenhoc .content, #module-huyenhoc .panel, #module-huyenhoc .section-box, #module-huyenhoc .header-info, #module-huyenhoc .que-box, #module-huyenhoc textarea, #module-huyenhoc select, #module-huyenhoc form, #module-huyenhoc table {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #module-huyenhoc .panel.active {
+        padding: 10px;
+    }
+
+    #module-huyenhoc .header-info, #module-huyenhoc .que-box, #module-huyenhoc .section-box {
+        padding: 12px;
+    }
+
+    /* Tabs */
+    #module-huyenhoc .tab {
+        flex: 1 1 33%;
+        padding: 10px 5px;
+        font-size: 12px;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    /* Header 3 box */
+    #module-huyenhoc #headerBox.header {
+        gap: 4px !important;
+    }
+
+    #module-huyenhoc #headerBox.header .que-box {
+        padding: 6px 3px !important;
+        font-size: 12px;
+    }
+
+    #module-huyenhoc .que-name {
+        font-size: 12px !important;
+    }
+
+    /* Grid */
+    #module-huyenhoc .time-grid {
+        width: 100% !important;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #module-huyenhoc .double-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #module-huyenhoc .hao-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Table */
+    #module-huyenhoc .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+
+    #module-huyenhoc .table th, #module-huyenhoc .table td {
+        padding: 6px;
+    }
+
+    /* Form */
+    #module-huyenhoc input, #module-huyenhoc select, #module-huyenhoc textarea, #module-huyenhoc button {
+        width: 100%;
+        max-width: 100%;
+        font-size: 14px;
+    }
+
+    /* Textarea */
+    #module-huyenhoc textarea {
+        min-height: 120px;
+    }
+
+    /* Donut */
+    #module-huyenhoc .donut {
+        width: 45px !important;
+        height: 45px !important;
+    }
+
+    #module-huyenhoc .donut::before {
+        width: 33px !important;
+        height: 33px !important;
+    }
+
+    #module-huyenhoc .donut span {
+        font-size: 10px;
+    }
+
+    /* Tiêu đề */
+    #module-huyenhoc .section-title {
+        font-size: 16px;
+    }
+
+    /* Nút Copy căn giữa */
+    #module-huyenhoc .btn-copy {
+        display: block;
+        width: fit-content !important;
+        min-width: 120px;
+        margin: 15px auto !important;
+        padding: 12px 24px;
+    }
+
+    /* Các button khác full width */
+    #module-huyenhoc .submit-btn {
+        width: 100%;
+    }
+}
+
+/* Mobile cực nhỏ */
+@media (max-width: 480px) {
+
+    #module-huyenhoc {
+        font-size: 13px;
+    }
+
+    #module-huyenhoc .tab {
+        font-size: 11px;
+        padding: 8px 4px;
+    }
+
+    #module-huyenhoc .section-title {
+        font-size: 14px;
+    }
+
+    #module-huyenhoc .table {
+        font-size: 11px;
+    }
+
+    #module-huyenhoc .table th, #module-huyenhoc .table td {
+        padding: 4px;
+    }
+
+    #module-huyenhoc .que-name {
+        font-size: 11px !important;
+    }
+
+    #module-huyenhoc .hao-grid {
+        grid-template-columns: 1fr;
+    }
+}

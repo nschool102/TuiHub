@@ -1,0 +1,71 @@
+<!-- =========================================================================
+     MODULE: SETTINGS (toàn app)
+     Tái sử dụng logic gốc của module Gia đình (theme/sync/reset/app-info) và
+     module Huyền học (bộ màu) qua window.HubModules.* — không viết lại logic.
+     ========================================================================= -->
+<div id="module-settings" class="app-module">
+<div id="settings-page">
+
+    <!-- a. THAY ĐỔI GIAO DIỆN -->
+    <div class="settings-card">
+        <div class="settings-card-title">🎨 Thay đổi giao diện</div>
+
+        <div class="settings-subsection">
+            <div class="settings-subtitle">💰 Quản lí gia đình</div>
+            <div class="settings-row">
+                <span>🌙 Chế độ tối</span>
+                <label class="hub-switch">
+                    <input type="checkbox" id="settings-finance-dark">
+                    <span class="hub-slider"></span>
+                </label>
+            </div>
+            <div class="settings-row">
+                <span>Màu chủ đạo</span>
+                <select id="settings-finance-color" class="settings-select"></select>
+            </div>
+        </div>
+
+        <div class="settings-subsection">
+            <div class="settings-subtitle">🔮 Huyền học</div>
+            <div class="settings-row">
+                <span>Bộ màu</span>
+                <select id="settings-huyenhoc-theme" class="settings-select"></select>
+            </div>
+            <div class="settings-row">
+                <span>Chế độ</span>
+                <select id="settings-huyenhoc-mode" class="settings-select">
+                    <option value="dark">🌙 Dark</option>
+                    <option value="light">☀️ Light</option>
+                </select>
+            </div>
+        </div>
+
+        <p class="settings-note">🧮 Máy tính lười dùng 1 giao diện cố định, chưa có tùy chỉnh màu.</p>
+    </div>
+
+    <!-- b. ĐỒNG BỘ DỮ LIỆU -->
+    <div class="settings-card">
+        <div class="settings-card-title">🔄 Đồng bộ dữ liệu</div>
+        <p class="settings-desc">Đồng bộ dữ liệu module Quản lí gia đình (Thu/Chi/Nhật kí/Family/Nhắc hẹn) với Google Sheets. Huyền học và Máy tính lười không cần đồng bộ — dữ liệu lưu trên máy.</p>
+        <button class="hub-btn" id="settings-btn-sync">🔄 Đồng bộ ngay</button>
+        <div id="settings-sync-status" class="settings-status"></div>
+    </div>
+
+    <!-- c. XÓA DỮ LIỆU VÀ ĐẶT LẠI APP -->
+    <div class="settings-card">
+        <div class="settings-card-title">🗑️ Xóa dữ liệu và Đặt lại App</div>
+        <p class="settings-desc">Xóa toàn bộ dữ liệu cục bộ (thu chi, nhật kí, family, nhắc hẹn, theme đã lưu ở mọi module) và đặt lại app về mặc định. Cần xác thực mật khẩu. Không thể hoàn tác.</p>
+        <button class="hub-btn danger" id="settings-btn-reset">🗑️ Xóa sạch dữ liệu &amp; Đặt lại App</button>
+    </div>
+
+    <!-- d. THÔNG TIN ỨNG DỤNG -->
+    <div class="settings-card settings-card-clickable" id="settings-btn-appinfo">
+        <div class="settings-card-title">ℹ️ Thông tin ứng dụng</div>
+        <p class="settings-desc">Phiên bản, lần đồng bộ gần nhất, tổng số liệu (module Gia đình). Chạm để xem chi tiết.</p>
+    </div>
+
+    <div class="settings-hub-version">Tui Hub v1.0.0 — Gia đình · Huyền học · Máy tính lười</div>
+
+</div>
+</div>
+<!-- end MODULE: SETTINGS -->

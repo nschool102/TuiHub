@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#101214">
 <title>Tui Hub</title>
@@ -11,14 +11,18 @@
 <link rel="icon" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
 
+<!-- ===== VENDOR LIBS DÙNG CHUNG (Chart.js cho module Gia đình) ===== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
 <!-- ===== SHELL CSS (khung navbar, layout tổng) ===== -->
 <link rel="stylesheet" href="./assets/css/shell.css">
 
 <!-- ===== MODULE CSS (mỗi module tự scope theo #module-xxx, không đụng nhau) ===== -->
 <link rel="stylesheet" href="./modules/finance/finance.css">
-<!-- <link rel="stylesheet" href="./modules/huyenhoc/huyenhoc.css"> -->
-<!-- <link rel="stylesheet" href="./modules/calculator/calculator.css"> -->
-<!-- <link rel="stylesheet" href="./modules/settings/settings.css"> -->
+<link rel="stylesheet" href="./modules/huyenhoc/huyenhoc.css">
+<link rel="stylesheet" href="./modules/calculator/calculator.css">
+<link rel="stylesheet" href="./modules/settings/settings.css">
 </head>
 <body>
 
@@ -378,6 +382,10 @@
     </div>
     <!-- end FAMILY MODAL -->
 
+<!-- NÚT SCROLL TO TOP (bị sót khi tách khỏi Tui gốc — gây lỗi addEventListener(null)
+     làm setupEventListeners() dừng giữa chừng, kéo theo initDB() không chạy) -->
+<button class="scroll-top" id="scrollTopBtn">↑</button>
+
 <!-- ---------------------------------------------------------------------
      TẠM ẨN: khối Settings + App Info gốc của module Gia đình.
      Sẽ được BƯỚC 4 (Settings toàn app) tái sử dụng — script.js vẫn cần
@@ -426,74 +434,634 @@
     </div>
     <!-- end TAB SETTINGS -->
 
-<!-- MODAL THÔNG TIN ỨNG DỤNG -->
-    <div id="appInfoModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <button class="modal-close" id="btn-close-app-info">&times;</button>
-            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--theme-color); display: flex; align-items: center; gap: 10px;">
-                <span>ℹ️</span> Thông tin ứng dụng
-            </h3>
-            <div class="app-info-modal">
-                <div class="info-row-app">
-                    <span class="info-label-app">📱 Ứng dụng:</span>
-                    <span class="info-value-app" style="font-weight: 600; color: var(--theme-color);">TÔI - Quản lý tài chính</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">🔨 Phiên bản:</span>
-                    <span class="info-value-app" id="app-version">1.0.0</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">📅 Last build:</span>
-                    <span class="info-value-app" id="app-build-date">--/--/---- --:--:--</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">🔄 Last sync:</span>
-                    <span class="info-value-app" id="app-last-sync">Chưa đồng bộ</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">📊 Tổng giao dịch:</span>
-                    <span class="info-value-app" id="app-total-transactions">0</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">⏰ Tổng nhắc hẹn:</span>
-                    <span class="info-value-app" id="app-total-reminders">0</span>
-                </div>
-                <div class="info-row-app" style="border-bottom: none; padding-bottom: 0;">
-                    <span class="info-label-app">👨‍👩‍👧‍👦 Thành viên:</span>
-                    <span class="info-value-app" id="app-total-family">0</span>
-                </div>
-            </div>
-            <button class="btn" id="btn-refresh-app-info" style="margin-top: 15px;">🔄 Làm mới</button>
-        </div>
-    </div>
-    <!-- end MODAL THÔNG TIN ỨNG DỤNG -->
-
 </div>
 <!-- end TẠM ẨN finance-legacy-settings -->
+
+<!-- [HUB] MODAL THÔNG TIN ỨNG DỤNG đã CHUYỂN sang shell (index.html), ngoài mọi
+     .app-module — vì modal cần hiện được kể cả khi đang đứng ở trang Settings
+     (lúc đó module-finance không active/display:none, modal nếu nằm trong đây
+     cũng sẽ bị ẩn theo dù tự set display:flex). ID các phần tử bên trong (app-version,
+     app-build-date...) giữ nguyên nên openAppInfoModal()/updateAppInfo() không cần sửa gì. -->
 
 </div>
 <!-- end MODULE: QUẢN LÍ GIA ĐÌNH -->
 
 
-        <!-- MODULE: HUYỀN HỌC — sẽ ghép ở bước tiếp theo -->
-        <div id="module-huyenhoc" class="app-module">
-            <div class="hub-loading">🔮 Module Huyền học đang được ghép — sắp có.</div>
+<!-- =========================================================================
+     MODULE: HUYỀN HỌC (nguồn gốc: repo KingDitch)
+     ========================================================================= -->
+<div id="module-huyenhoc" class="app-module" data-theme="dark">
+
+<div class="app">
+
+<!-- TAB MAI HOA -->
+        <div class="panel active" id="maihoa-container">
+            <div id="result-display"></div>
+        </div>
+    <!-- end of TAB MAI HOA  -->
+
+    <!-- TAB FULL CUSTOM OF DỊCH -->
+        <div class="panel" id="fullcustom-container">
+            <div id="form-area">
+                <!-- SECTION 1: THOI GIAN -->
+                    <div class="section-box">
+                        <div class="section-title">THỜI GIAN</div>
+                        <label class="checkbox-line">
+                          <input type="checkbox" id="fc-now">
+                          Bây giờ
+                        </label>
+                        <div class="time-grid">
+                          <select id="fc-hour">
+                            
+                          </select>
+                          <select id="fc-day"></select>
+                          <select id="fc-month"></select>
+                          <select id="fc-year"></select>
+                        </div>
+                    </div> 
+                <!-- end of SECTION 1: THOI GIAN -->
+
+                <!-- SECTION 2: PHUONG PHAP --> 
+                    <div class="section-box">
+                        <div class="section-title">PHƯƠNG PHÁP LẬP QUẺ</div>
+                        <select id="fc-method">
+                            <option value="MaiHoa">Mai Hoa</option>
+                            <option value="LucHao">Lục Hào</option>
+                        </select>
+                    </div> 
+                <!-- end of SECTION 2: PHUONG PHAP -->
+
+                <!-- SECTION 3: LUC HAO --> 
+                    <div class="section-box" id="lucHaoBox" style="display:none;">
+                        <div class="section-title">QUẺ LỤC HÀO</div>
+                        <div class="double-grid">
+                            <div>
+                                <label>Quái Thượng</label>
+                                <select id="fc-up">
+                                    <option value="111">1. Càn Thiên</option>
+                                    <option value="110">2. Đoài Trạch</option>
+                                    <option value="101">3. Li Hỏa</option>
+                                    <option value="100">4. Chấn Lôi</option>
+                                    <option value="011">5. Tốn Phong</option>
+                                    <option value="010">6. Khảm Thủy</option>
+                                    <option value="001">7. Cấn Sơn</option>
+                                    <option value="000">8. Khôn Địa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Quái Hạ</label>
+                                <select id="fc-down">
+                                    <option value="111">1. Càn Thiên</option>
+                                    <option value="110">2. Đoài Trạch</option>
+                                    <option value="101">3. Li Hỏa</option>
+                                    <option value="100">4. Chấn Lôi</option>
+                                    <option value="011">5. Tốn Phong</option>
+                                    <option value="010">6. Khảm Thủy</option>
+                                    <option value="001">7. Cấn Sơn</option>
+                                    <option value="000">8. Khôn Địa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="hao-grid">
+                            <label><input type="checkbox" class="hao-cb" value="1"> Hào 1</label>
+                            <label><input type="checkbox" class="hao-cb" value="2"> Hào 2</label>
+                            <label><input type="checkbox" class="hao-cb" value="3"> Hào 3</label>
+                            <label><input type="checkbox" class="hao-cb" value="4"> Hào 4</label>
+                            <label><input type="checkbox" class="hao-cb" value="5"> Hào 5</label>
+                            <label><input type="checkbox" class="hao-cb" value="6"> Hào 6</label>
+                        </div>
+
+                        <button class="submit-btn" id="btnLucHao">Submit Quẻ Lục Hào</button>
+                    </div> 
+                <!-- end of SECTION 3: LUC HAO -->
+
+                <!-- SECTION 4: MAI HOA --> 
+                    <div class="section-box" id="maiHoaBox">
+                        <div class="section-title">QUẺ MAI HOA</div>
+                        <button class="submit-btn" id="btnMaiHoa">Submit Quẻ Mai Hoa</button>
+                    </div> 
+                <!-- end of SECTION 4: MAI HOA -->
+
+                <!-- SECTION 5: RESULT -->
+                    <div id="custom-container"></div>
+                <!-- end of SECTION 5: RESULT -->
+            </div>
+        </div>
+    <!-- end of TAB FULL CUSTOM OF DỊCH -->
+
+
+    <!-- TAB TAROT -->
+        <div class="panel" id="tarot-container">
+            <div class="section-box"><h3>🔮 Tarot</h3><p>Tính năng đang phát triển...</p></div>
+        </div>
+    <!-- end of TAB TAROT -->
+
+    
+    <!-- TAB DECISION -->
+        <div class="panel" id="decision-container">
+            <div style="display:flex; flex-direction:column; align-items:center; gap: 25px;" class="section-box">
+                <button id="btn-draw" class="submit-btn">🎲 Draw Decision</button>
+                
+                <div id="decision-result">
+                    <h1 id="res-detail">Nhấn nút để lấy quyết định...</h1>
+                </div>
+    
+            </div>
+            
+        </div>
+    <!-- end of TAB DECISION -->
+
+</div>
+
+<!-- ---------------------------------------------------------------------
+     TẠM ẨN: khối Settings (chọn theme màu) gốc của module Huyền học.
+     clientSide.js vẫn cần các id này tồn tại để gắn sự kiện.
+     Sẽ được BƯỚC 4 (Settings toàn app) tái sử dụng.
+     --------------------------------------------------------------------- -->
+<div id="huyenhoc-legacy-settings" style="display:none;" aria-hidden="true">
+
+<!-- TAB SETTINGS -->
+        <div class="panel" id="settings-container">
+            <div class="section-box">
+                <div class="section-title">⚙️ CÀI ĐẶT GIAO DIỆN</div>
+                <div class="theme-controls">
+                    <select id="theme-selector">
+                        </select>
+                    
+                    <select id="mode-selector">
+                        <option value="dark">🌙 Dark</option>
+                        <option value="light">☀️ Light</option>
+                    </select>
+                    
+                    <button onclick="HubModules.huyenhoc.applyTheme()">Apply Theme</button>
+                </div>
+            </div>
+        </div>
+    <!-- end of TAB SETTINGS -->
+
+</div>
+<!-- end TẠM ẨN huyenhoc-legacy-settings -->
+
+</div>
+<!-- end MODULE: HUYỀN HỌC -->
+
+
+<!-- =========================================================================
+     MODULE: MÁY TÍNH LƯỜI (nguồn gốc: repo myIOSCalculator)
+     ========================================================================= -->
+<div id="module-calculator" class="app-module">
+
+<!-- TAB 0: CƠ BẢN (đã đổi: nhập động tối đa 10 số thay vì cố định A/B) -->
+<div class="panel active" id="panel-0">
+  <div class="card">
+    <div class="card-title">📥 Nhập số</div>
+    <div class="basic-inputs-list" id="b0-inputs-list">
+      <div class="basic-input-row" data-idx="1">
+        <label>Số 1</label>
+        <div class="basic-input-row-inner">
+          <input type="number" class="basic-input-el" id="b0-1" placeholder="0" oninput="Calc.calcBasic()">
+        </div>
+      </div>
+      <div class="basic-input-row" data-idx="2">
+        <label>Số 2</label>
+        <div class="basic-input-row-inner">
+          <input type="number" class="basic-input-el" id="b0-2" placeholder="0" oninput="Calc.calcBasic()">
+        </div>
+      </div>
+    </div>
+    <button type="button" id="b0-add-btn" class="basic-add-btn" onclick="Calc.addBasicInput()">+ Thêm số (2/10)</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Kết quả <span class="copy-hint">(chạm vào để copy)</span></div>
+    <div class="ops-list" id="b0-results">
+      <div class="op-row"><span class="op-name" style="color:var(--text3);font-size:12px">Nhập ít nhất 2 số để xem kết quả...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 1: PHẦN TRĂM -->
+<div class="panel" id="panel-1">
+  <div class="card">
+    <div class="card-title">📥 Nhập số tiền & %</div>
+    <div class="chips" id="unit-chips1">
+      <div class="chip active" data-unit="ty">Tỉ</div>
+      <div class="chip" data-unit="trieu">Triệu</div>
+      <div class="chip" data-unit="k">K</div>
+    </div>
+    <div class="field"><label>Số tiền gốc</label><input type="number" id="b1-a" placeholder="Ví dụ: 15" oninput="Calc.calcPct()"></div>
+    <div class="field"><label>Phần trăm (%)</label><input type="number" id="b1-b" placeholder="Ví dụ: 5" oninput="Calc.calcPct()"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Kết quả</div>
+    <div id="pct-results"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập số tiền và % để xem kết quả...</span></div></div>
+  </div>
+</div>
+
+<!-- TAB 2: TỈ LỆ (không có chips đơn vị) -->
+<div class="panel" id="panel-2">
+  <div class="card">
+    <div class="card-title">📥 Nhập số</div>
+    <div class="field"><label>Số A</label><input type="number" id="b2-a" placeholder="Ví dụ: 120" oninput="Calc.calcRatio()"></div>
+    <div class="field"><label>Số B</label><input type="number" id="b2-b" placeholder="Ví dụ: 150" oninput="Calc.calcRatio()"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Kết quả</div>
+    <div id="ratio-results"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập A và B để xem kết quả...</span></div></div>
+  </div>
+</div>
+
+<!-- TAB 3: LÃI SUẤT -->
+<div class="panel" id="panel-3">
+  <div class="card">
+    <div class="card-title">📥 Nhập thông tin</div>
+    <div class="chips" id="unit-chips3">
+      <div class="chip active" data-unit="ty">Tỉ</div>
+      <div class="chip" data-unit="trieu">Triệu</div>
+      <div class="chip" data-unit="dong">Đồng</div>
+    </div>
+    <div class="field"><label>Vốn</label><input type="number" id="ls-von" placeholder="Ví dụ: 100000000" oninput="Calc.calcInterest()"></div>
+    <div class="field"><label>Lãi suất năm (%)</label><input type="number" id="ls-rate" placeholder="Ví dụ: 7.5" step="0.01" oninput="Calc.calcInterest()"></div>
+    <div class="field"><label>Số tháng</label><input type="number" id="ls-months" placeholder="Ví dụ: 12" oninput="Calc.calcInterest()"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Kết quả</div>
+    <div class="result-grid">
+      <div class="result-row"><span class="result-label">Lãi / tháng</span><span class="result-val" id="ls-monthly">—</span></div>
+      <div class="result-row"><span class="result-label">Tổng lãi</span><span class="result-val" id="ls-total-int">—</span></div>
+      <div class="result-row"><span class="result-label">Tổng nhận được</span><span class="result-val accent" id="ls-grand">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: TRÚNG SỐ -->
+<div class="panel" id="panel-4">
+  <div class="card">
+    <div class="card-title">📥 Nhập thông tin</div>
+    <div class="chips" id="unit-chips4">
+      <div class="chip active" data-unit="ty">Tỉ</div>
+      <div class="chip" data-unit="trieu">Triệu</div>
+      <div class="chip" data-unit="dong">Đồng</div>
+    </div>
+    <div class="field"><label>💰 Tiền trúng (chỉnh để tính)</label><input type="number" id="lott-win" placeholder="Nhập tiền trúng..." oninput="Calc.calcLottFrom('win')"></div>
+    <div class="field"><label>🏦 Thuế 10% (chỉ xem)</label><input type="number" id="lott-tax" placeholder="—" readonly class="result-field"></div>
+    <div class="field"><label>✅ Tiền thực nhận (chỉnh để tính ngược)</label><input type="number" id="lott-net" placeholder="Nhập tiền thực nhận..." oninput="Calc.calcLottFrom('net')"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📊 Tóm tắt</div>
+    <div class="result-grid">
+      <div class="result-row"><span class="result-label">Tiền trúng</span><span class="result-val accent" id="lott-sum-win">—</span></div>
+      <div class="result-row"><span class="result-label">Thuế (10%)</span><span class="result-val neg" id="lott-sum-tax">—</span></div>
+      <div class="result-row"><span class="result-label">Thực nhận (90%)</span><span class="result-val" id="lott-sum-net">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: THỜI GIAN -->
+<div class="panel" id="panel-5">
+  <div class="card">
+    <div class="card-title">📥 Chọn ngày</div>
+    <div class="date-inputs">
+      <div class="field" style="margin:0"><label>Ngày bắt đầu</label><input type="date" id="date-start" oninput="Calc.calcDate()"></div>
+      <div class="field" style="margin:0"><label>Ngày kết thúc</label><input type="date" id="date-end" oninput="Calc.calcDate()"></div>
+    </div>
+    <button onclick="Calc.clearDates()" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;">🔄 Xóa để dùng hôm nay</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Kết quả</div>
+    <div id="date-result" style="color:var(--text2);font-size:14px;text-align:center;padding:8px">Chọn ít nhất 1 ngày...</div>
+    <div id="date-sentence" style="display:none;background:var(--surface2);border-radius:10px;padding:14px;border:1px solid var(--border);font-size:14px;line-height:1.6;color:var(--text)"></div>
+  </div>
+</div>
+
+<!-- TAB 6: NHÀ CỬA -->
+<div class="panel" id="panel-6">
+  <div class="card">
+    <div class="card-title">📥 Thông tin bất động sản</div>
+    <div class="chips" id="unit-chips6">
+      <div class="chip active" data-unit="ty">Tỉ</div>
+      <div class="chip" data-unit="trieu">Triệu</div>
+      <div class="chip" data-unit="dong">Đồng</div>
+    </div>
+    <div class="field"><label>Chiều dài (m)</label><input type="number" id="nh-dai" placeholder="Ví dụ: 10" step="0.1" oninput="Calc.calcHouse()"></div>
+    <div class="field"><label>Chiều rộng (m)</label><input type="number" id="nh-rong" placeholder="Ví dụ: 5" step="0.1" oninput="Calc.calcHouse()"></div>
+    <div class="field"><label>Giá bán (để trống nếu chỉ tính diện tích)</label><input type="number" id="nh-gia" placeholder="Không bắt buộc" oninput="Calc.calcHouse()"></div>
+  </div>
+  <div class="card" id="house-results" style="display:none">
+    <div class="card-title">📤 Kết quả</div>
+    <div class="result-grid" id="house-grid"></div>
+  </div>
+</div>
+
+<!-- TAB 7: CHIA TIỀN -->
+<div class="panel" id="panel-7">
+  <div class="card">
+    <div class="card-title">📥 Nhập thông tin</div>
+    <div class="chips" id="unit-chips7">
+      <div class="chip" data-unit="ty">Tỉ</div>
+      <div class="chip" data-unit="trieu">Triệu</div>
+      <div class="chip active" data-unit="k">K</div>
+    </div>
+    <div class="field"><label>Tổng tiền</label><input type="number" id="sp-total" placeholder="Ví dụ: 275" oninput="Calc.calcSplit()"></div>
+    <div class="field"><label>Số người</label><input type="number" id="sp-people" placeholder="Ví dụ: 5" min="1" oninput="Calc.calcSplit()"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Kết quả</div>
+    <div id="split-results"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập tổng tiền và số người...</span></div></div>
+  </div>
+</div>
+
+<!-- TAB 8: MUA SẮM -->
+<div class="panel" id="panel-8">
+  <div class="card">
+    <div class="card-title">🏷️ Giảm giá</div>
+    <div class="chips" id="unit-chips8">
+      <div class="chip" data-unit="ty">Tỉ</div>
+      <div class="chip" data-unit="trieu">Triệu</div>
+      <div class="chip active" data-unit="k">K</div>
+    </div>
+    <div class="field"><label>Giá gốc</label><input type="number" id="sh-price" placeholder="Ví dụ: 345" oninput="Calc.calcShop()"></div>
+    <div class="field"><label>% Giảm giá</label><input type="number" id="sh-disc" placeholder="Ví dụ: 20" oninput="Calc.calcShop()"></div>
+    <div id="shop-results" style="margin-top:10px"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập giá gốc và % giảm...</span></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📦 Giá theo đơn vị</div>
+    <div class="field"><label>Giá bán (tổng)</label><input type="number" id="sh-total" placeholder="Ví dụ: 90" oninput="Calc.calcUnit()"></div>
+    <div class="field"><label>Số lượng</label><input type="number" id="sh-qty" placeholder="Ví dụ: 3" min="1" oninput="Calc.calcUnit()"></div>
+    <div id="unit-results" style="margin-top:10px"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập giá bán và số lượng...</span></div></div>
+  </div>
+</div>
+
+<!-- TAB 9: ĐỔI ĐƠN VỊ (redesigned) -->
+<div class="panel" id="panel-9">
+
+  <!-- CHIỀU DÀI -->
+  <div class="card">
+    <div class="card-title">📏 Chiều dài</div>
+    <div class="cv-row">
+      <div>
+        <div class="cv-label">Hệ Anh/Mỹ <span class="sys-badge sys-en">EN</span></div>
+        <input type="number" id="len-en" placeholder="0" oninput="Calc.cvLen('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <select id="len-en-u" onchange="Calc.cvLen('en')" class="cv-sel">
+          <option value="in">inch (in)</option>
+          <option value="ft">foot (ft)</option>
+          <option value="yd">yard (yd)</option>
+          <option value="mi">mile (mi)</option>
+        </select>
+      </div>
+      <div class="cv-mid">⇄</div>
+      <div>
+        <div class="cv-label">Hệ SI <span class="sys-badge sys-si">SI</span></div>
+        <input type="number" id="len-si" placeholder="0" oninput="Calc.cvLen('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <select id="len-si-u" onchange="Calc.cvLen('en')" class="cv-sel">
+          <option value="mm">mm</option>
+          <option value="cm">cm</option>
+          <option value="m">m</option>
+          <option value="km">km</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- KHỐI LƯỢNG -->
+  <div class="card">
+    <div class="card-title">⚖️ Khối lượng</div>
+    <div class="cv-row">
+      <div>
+        <div class="cv-label">Hệ Anh/Mỹ <span class="sys-badge sys-en">EN</span></div>
+        <input type="number" id="wt-en" placeholder="0" oninput="Calc.cvWt('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <select id="wt-en-u" onchange="Calc.cvWt('en')" class="cv-sel">
+          <option value="oz">ounce (oz)</option>
+          <option value="lb">pound (lb)</option>
+        </select>
+      </div>
+      <div class="cv-mid">⇄</div>
+      <div>
+        <div class="cv-label">Hệ SI <span class="sys-badge sys-si">SI</span></div>
+        <input type="number" id="wt-si" placeholder="0" oninput="Calc.cvWt('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <select id="wt-si-u" onchange="Calc.cvWt('en')" class="cv-sel">
+          <option value="g">gram (g)</option>
+          <option value="kg">kilogram (kg)</option>
+          <option value="t">tấn (t)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- THỂ TÍCH -->
+  <div class="card">
+    <div class="card-title">🧴 Thể tích</div>
+    <div class="cv-row">
+      <div>
+        <div class="cv-label">Hệ Anh/Mỹ <span class="sys-badge sys-en">EN</span></div>
+        <input type="number" id="vol-en" placeholder="0" oninput="Calc.cvVol('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <select id="vol-en-u" onchange="Calc.cvVol('en')" class="cv-sel">
+          <option value="floz">fl oz (US)</option>
+          <option value="pt">pint (US)</option>
+          <option value="qt">quart (US)</option>
+          <option value="gal">gallon (US)</option>
+        </select>
+      </div>
+      <div class="cv-mid">⇄</div>
+      <div>
+        <div class="cv-label">Hệ SI <span class="sys-badge sys-si">SI</span></div>
+        <input type="number" id="vol-si" placeholder="0" oninput="Calc.cvVol('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <select id="vol-si-u" onchange="Calc.cvVol('en')" class="cv-sel">
+          <option value="ml">ml</option>
+          <option value="lit">lít (L)</option>
+          <option value="m3">m³</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- NHIỆT ĐỘ -->
+  <div class="card">
+    <div class="card-title">🌡️ Nhiệt độ</div>
+    <div class="cv-row">
+      <div>
+        <div class="cv-label">°F <span class="sys-badge sys-en">EN</span></div>
+        <input type="number" id="temp-f" placeholder="°F" oninput="Calc.cvTemp('f')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+      </div>
+      <div class="cv-mid">⇄</div>
+      <div>
+        <div class="cv-label">°C <span class="sys-badge sys-si">SI</span></div>
+        <input type="number" id="temp-c" placeholder="°C" oninput="Calc.cvTemp('c')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- VẬN TỐC -->
+  <div class="card">
+    <div class="card-title">💨 Vận tốc</div>
+    <div class="cv-row">
+      <div>
+        <div class="cv-label">km/h</div>
+        <input type="number" id="spd-kmh" placeholder="km/h" oninput="Calc.cvSpd('kmh')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+      </div>
+      <div class="cv-mid">⇄</div>
+      <div>
+        <div class="cv-label">m/s</div>
+        <input type="number" id="spd-ms" placeholder="m/s" oninput="Calc.cvSpd('ms')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- GIỜ VIỆT NAM ↔ UTC -->
+  <div class="card">
+    <div class="card-title">🕐 Giờ Việt Nam ↔ UTC</div>
+    <div class="cv-row">
+      <div>
+        <div class="cv-label">🇻🇳 Giờ VN (GMT+7)</div>
+        <input type="time" id="tz-vn" oninput="Calc.cvTzVnUtc('vn')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+      </div>
+      <div class="cv-mid">⇄</div>
+      <div>
+        <div class="cv-label">🌐 UTC (GMT+0)</div>
+        <input type="time" id="tz-utc" oninput="Calc.cvTzVnUtc('utc')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+      </div>
+    </div>
+    <div id="tz-utc-note" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center"></div>
+    <button onclick="Calc.tzNow()" style="width:100%;margin-top:8px;padding:9px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:12px;cursor:pointer;">⏱ Dùng giờ hiện tại</button>
+  </div>
+
+  <!-- GIỜ VIỆT NAM → CÁC MÚI GIỜ KHÁC (đã đổi: nhóm theo châu lục, 2 cột mỗi nhóm) -->
+  <div class="card">
+    <div class="card-title">🌍 Giờ VN → Múi giờ khác</div>
+    <div id="tz-world-now" style="font-size:12px;color:var(--text3);margin-bottom:10px;text-align:center"></div>
+    <div class="field">
+      <label>Nhập giờ Việt Nam (để trống = dùng giờ hiện tại)</label>
+      <input type="time" id="tz-vn2" oninput="Calc.cvTzWorld()" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+    </div>
+    <div id="tz-world-groups"></div>
+  </div>
+
+</div><!-- /panel-9 -->
+
+</div>
+<!-- end MODULE: MÁY TÍNH LƯỜI -->
+
+
+<!-- =========================================================================
+     MODULE: SETTINGS (toàn app)
+     Tái sử dụng logic gốc của module Gia đình (theme/sync/reset/app-info) và
+     module Huyền học (bộ màu) qua window.HubModules.* — không viết lại logic.
+     ========================================================================= -->
+<div id="module-settings" class="app-module">
+<div id="settings-page">
+
+    <!-- a. THAY ĐỔI GIAO DIỆN -->
+    <div class="settings-card">
+        <div class="settings-card-title">🎨 Thay đổi giao diện</div>
+
+        <div class="settings-subsection">
+            <div class="settings-subtitle">💰 Quản lí gia đình</div>
+            <div class="settings-row">
+                <span>🌙 Chế độ tối</span>
+                <label class="hub-switch">
+                    <input type="checkbox" id="settings-finance-dark">
+                    <span class="hub-slider"></span>
+                </label>
+            </div>
+            <div class="settings-row">
+                <span>Màu chủ đạo</span>
+                <select id="settings-finance-color" class="settings-select"></select>
+            </div>
         </div>
 
-        <!-- MODULE: MÁY TÍNH LƯỜI — sẽ ghép ở bước sau -->
-        <div id="module-calculator" class="app-module">
-            <div class="hub-loading">🧮 Module Máy tính lười đang được ghép — sắp có.</div>
+        <div class="settings-subsection">
+            <div class="settings-subtitle">🔮 Huyền học</div>
+            <div class="settings-row">
+                <span>Bộ màu</span>
+                <select id="settings-huyenhoc-theme" class="settings-select"></select>
+            </div>
+            <div class="settings-row">
+                <span>Chế độ</span>
+                <select id="settings-huyenhoc-mode" class="settings-select">
+                    <option value="dark">🌙 Dark</option>
+                    <option value="light">☀️ Light</option>
+                </select>
+            </div>
         </div>
 
-        <!-- MODULE: SETTINGS (toàn app) — sẽ dựng ở bước cuối -->
-        <div id="module-settings" class="app-module">
-            <div class="hub-loading">⚙️ Settings toàn app sẽ được dựng ở bước cuối cùng.</div>
-        </div>
+        <p class="settings-note">🧮 Máy tính lười dùng 1 giao diện cố định, chưa có tùy chỉnh màu.</p>
+    </div>
+
+    <!-- b. ĐỒNG BỘ DỮ LIỆU -->
+    <div class="settings-card">
+        <div class="settings-card-title">🔄 Đồng bộ dữ liệu</div>
+        <p class="settings-desc">Đồng bộ dữ liệu module Quản lí gia đình (Thu/Chi/Nhật kí/Family/Nhắc hẹn) với Google Sheets. Huyền học và Máy tính lười không cần đồng bộ — dữ liệu lưu trên máy.</p>
+        <button class="hub-btn" id="settings-btn-sync">🔄 Đồng bộ ngay</button>
+        <div id="settings-sync-status" class="settings-status"></div>
+    </div>
+
+    <!-- c. XÓA DỮ LIỆU VÀ ĐẶT LẠI APP -->
+    <div class="settings-card">
+        <div class="settings-card-title">🗑️ Xóa dữ liệu và Đặt lại App</div>
+        <p class="settings-desc">Xóa toàn bộ dữ liệu cục bộ (thu chi, nhật kí, family, nhắc hẹn, theme đã lưu ở mọi module) và đặt lại app về mặc định. Cần xác thực mật khẩu. Không thể hoàn tác.</p>
+        <button class="hub-btn danger" id="settings-btn-reset">🗑️ Xóa sạch dữ liệu &amp; Đặt lại App</button>
+    </div>
+
+    <!-- d. THÔNG TIN ỨNG DỤNG -->
+    <div class="settings-card settings-card-clickable" id="settings-btn-appinfo">
+        <div class="settings-card-title">ℹ️ Thông tin ứng dụng</div>
+        <p class="settings-desc">Phiên bản, lần đồng bộ gần nhất, tổng số liệu (module Gia đình). Chạm để xem chi tiết.</p>
+    </div>
+
+    <div class="settings-hub-version">Tui Hub v1.0.0 — Gia đình · Huyền học · Máy tính lười</div>
+
+</div>
+</div>
+<!-- end MODULE: SETTINGS -->
+
 
     </div>
 
     <!-- ===== BOTTOM NAV (cấp 1) ===== -->
     <div id="hub-bottomnav"></div>
+
+    <!-- ===== MODAL THÔNG TIN ỨNG DỤNG (module Gia đình) =====
+         Đặt ở cấp shell, ngoài mọi .app-module, để mở được từ trang Settings
+         dù module Gia đình lúc đó không active/display:none.
+         openAppInfoModal()/closeAppInfoModal()/updateAppInfo() trong finance.js
+         vẫn getElementById các id bên dưới bình thường, không cần đổi gì. -->
+    <div id="appInfoModal" class="hub-modal">
+        <div class="hub-modal-content">
+            <button class="hub-modal-close" id="btn-close-app-info">&times;</button>
+            <h3 class="hub-modal-title"><span>ℹ️</span> Thông tin ứng dụng</h3>
+            <div class="hub-modal-body">
+                <div class="hub-info-row">
+                    <span class="hub-info-label">📱 Ứng dụng:</span>
+                    <span class="hub-info-value" style="font-weight:600;color:var(--hub-accent);">TÔI - Quản lý tài chính</span>
+                </div>
+                <div class="hub-info-row">
+                    <span class="hub-info-label">🔨 Phiên bản:</span>
+                    <span class="hub-info-value" id="app-version">1.0.0</span>
+                </div>
+                <div class="hub-info-row">
+                    <span class="hub-info-label">📅 Last build:</span>
+                    <span class="hub-info-value" id="app-build-date">--/--/---- --:--:--</span>
+                </div>
+                <div class="hub-info-row">
+                    <span class="hub-info-label">🔄 Last sync:</span>
+                    <span class="hub-info-value" id="app-last-sync">Chưa đồng bộ</span>
+                </div>
+                <div class="hub-info-row">
+                    <span class="hub-info-label">📊 Tổng giao dịch:</span>
+                    <span class="hub-info-value" id="app-total-transactions">0</span>
+                </div>
+                <div class="hub-info-row">
+                    <span class="hub-info-label">⏰ Tổng nhắc hẹn:</span>
+                    <span class="hub-info-value" id="app-total-reminders">0</span>
+                </div>
+                <div class="hub-info-row" style="border-bottom:none;">
+                    <span class="hub-info-label">👨‍👩‍👧‍👦 Thành viên:</span>
+                    <span class="hub-info-value" id="app-total-family">0</span>
+                </div>
+            </div>
+            <button class="hub-btn" id="btn-refresh-app-info">🔄 Làm mới</button>
+        </div>
+    </div>
 
 </div>
 
@@ -502,9 +1070,9 @@
 
 <!-- ===== MODULE JS (mỗi module tự đăng ký vào window.HubModules) ===== -->
 <script src="./modules/finance/finance.js"></script>
-<!-- <script src="./modules/huyenhoc/huyenhoc.js"></script> -->
-<!-- <script src="./modules/calculator/calculator.js"></script> -->
-<!-- <script src="./modules/settings/settings.js"></script> -->
+<script src="./modules/huyenhoc/huyenhoc.js"></script>
+<script src="./modules/calculator/calculator.js"></script>
+<script src="./modules/settings/settings.js"></script>
 
 </body>
 </html>

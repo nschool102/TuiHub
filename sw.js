@@ -4,7 +4,7 @@
 // deploy bản mới để buộc client tải lại cache.
 // =========================================================================
 
-const CACHE_NAME = 'tui-hub-v1';
+const CACHE_NAME = 'tui-hub-v2';
 const ASSETS = [
     './',
     './index.html',
@@ -13,7 +13,13 @@ const ASSETS = [
     './assets/css/shell.css',
     './assets/js/shell.js',
     './modules/finance/finance.css',
-    './modules/finance/finance.js'
+    './modules/finance/finance.js',
+    './modules/huyenhoc/huyenhoc.css',
+    './modules/huyenhoc/huyenhoc.js',
+    './modules/calculator/calculator.css',
+    './modules/calculator/calculator.js',
+    './modules/settings/settings.css',
+    './modules/settings/settings.js'
 ];
 
 self.addEventListener('install', event => {

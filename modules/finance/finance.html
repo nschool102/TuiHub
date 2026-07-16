@@ -339,6 +339,10 @@
     </div>
     <!-- end FAMILY MODAL -->
 
+<!-- NÚT SCROLL TO TOP (bị sót khi tách khỏi Tui gốc — gây lỗi addEventListener(null)
+     làm setupEventListeners() dừng giữa chừng, kéo theo initDB() không chạy) -->
+<button class="scroll-top" id="scrollTopBtn">↑</button>
+
 <!-- ---------------------------------------------------------------------
      TẠM ẨN: khối Settings + App Info gốc của module Gia đình.
      Sẽ được BƯỚC 4 (Settings toàn app) tái sử dụng — script.js vẫn cần
@@ -387,50 +391,14 @@
     </div>
     <!-- end TAB SETTINGS -->
 
-<!-- MODAL THÔNG TIN ỨNG DỤNG -->
-    <div id="appInfoModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <button class="modal-close" id="btn-close-app-info">&times;</button>
-            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--theme-color); display: flex; align-items: center; gap: 10px;">
-                <span>ℹ️</span> Thông tin ứng dụng
-            </h3>
-            <div class="app-info-modal">
-                <div class="info-row-app">
-                    <span class="info-label-app">📱 Ứng dụng:</span>
-                    <span class="info-value-app" style="font-weight: 600; color: var(--theme-color);">TÔI - Quản lý tài chính</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">🔨 Phiên bản:</span>
-                    <span class="info-value-app" id="app-version">1.0.0</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">📅 Last build:</span>
-                    <span class="info-value-app" id="app-build-date">--/--/---- --:--:--</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">🔄 Last sync:</span>
-                    <span class="info-value-app" id="app-last-sync">Chưa đồng bộ</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">📊 Tổng giao dịch:</span>
-                    <span class="info-value-app" id="app-total-transactions">0</span>
-                </div>
-                <div class="info-row-app">
-                    <span class="info-label-app">⏰ Tổng nhắc hẹn:</span>
-                    <span class="info-value-app" id="app-total-reminders">0</span>
-                </div>
-                <div class="info-row-app" style="border-bottom: none; padding-bottom: 0;">
-                    <span class="info-label-app">👨‍👩‍👧‍👦 Thành viên:</span>
-                    <span class="info-value-app" id="app-total-family">0</span>
-                </div>
-            </div>
-            <button class="btn" id="btn-refresh-app-info" style="margin-top: 15px;">🔄 Làm mới</button>
-        </div>
-    </div>
-    <!-- end MODAL THÔNG TIN ỨNG DỤNG -->
-
 </div>
 <!-- end TẠM ẨN finance-legacy-settings -->
+
+<!-- [HUB] MODAL THÔNG TIN ỨNG DỤNG đã CHUYỂN sang shell (index.html), ngoài mọi
+     .app-module — vì modal cần hiện được kể cả khi đang đứng ở trang Settings
+     (lúc đó module-finance không active/display:none, modal nếu nằm trong đây
+     cũng sẽ bị ẩn theo dù tự set display:flex). ID các phần tử bên trong (app-version,
+     app-build-date...) giữ nguyên nên openAppInfoModal()/updateAppInfo() không cần sửa gì. -->
 
 </div>
 <!-- end MODULE: QUẢN LÍ GIA ĐÌNH -->
