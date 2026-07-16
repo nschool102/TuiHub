@@ -1,0 +1,17 @@
+{
+  "name": "Tui Hub",
+  "short_name": "Tui Hub",
+  "version": "1.0.0",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#101214",
+  "theme_color": "#101214",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

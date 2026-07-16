@@ -1,0 +1,436 @@
+<!-- =========================================================================
+     MODULE: QUẢN LÍ GIA ĐÌNH (nguồn gốc: repo Tui)
+     data-theme scoped trong khung module này, không đụng module khác
+     ========================================================================= -->
+<div id="module-finance" class="app-module theme-yellow" data-theme="dark">
+
+<!-- TAB CHI -->
+    <div id="tab-chi" class="tab-content active">
+        <!-- HEADER TỔNG CHI TRONG THÁNG -->
+        <div class="summary-header">
+            <div class="summary-icon">📊</div>
+            <div class="summary-info">
+                <div class="summary-label">Tổng chi trong tháng</div>
+                <div class="summary-amount" id="total-chi-month" style="color: var(--danger-color);">0 đ</div>
+            </div>
+        </div>
+        <!-- end HEADER TỔNG CHI TRONG THÁNG -->
+        <div class="card">
+            <h3>Nhập Khoản Chi</h3>
+            <form id="form-chi">
+                <div class="form-group">
+                    <label>Danh mục phân loại (Type)</label>
+                    <select id="chi-type" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Danh mục chi tiết (Subtype)</label>
+                    <select id="chi-subtype" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền (VND)</label>
+                    <input type="text" id="chi-amount" inputmode="numeric" class="form-control" placeholder="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Thời gian</label>
+                    <input type="datetime-local" id="chi-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <input type="text" id="chi-note" class="form-control" placeholder="Nhập ghi chú chi tiết...">
+                </div>
+                <button type="submit" class="btn">Ghi Khoản Chi</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Tỷ Lệ Thu / Chi</h3>
+            <div class="chart-container">
+                <canvas id="chart-chi-overview"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Top 5 Khoản Chi Nhiều Nhất</h3>
+            <div class="form-group">
+                <select id="chi-top-period" class="form-control">
+                    <option value="week">Tuần này</option>
+                    <option value="month" selected>Tháng này</option>
+                    <option value="year">Năm này</option>
+                </select>
+            </div>
+            <div id="top-expenses-list"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Lịch sử Chi</h3>
+            <div id="expense-history-container">Đang tải lịch sử chi...</div>
+        </div>
+    </div>
+    <!-- end TAB CHI -->
+
+    <!-- TAB THU -->
+    <div id="tab-thu" class="tab-content">
+        <!-- HEADER TỔNG THU TRONG THÁNG -->
+        <div class="summary-header">
+            <div class="summary-icon">💰</div>
+            <div class="summary-info">
+                <div class="summary-label">Tổng thu trong tháng</div>
+                <div class="summary-amount" id="total-thu-month" style="color: var(--success-color);">0 đ</div>
+            </div>
+        </div>
+        <!-- end HEADER TỔNG THU TRONG THÁNG -->
+        <div class="card">
+            <h3>Nhập Khoản Thu</h3>
+            <form id="form-thu">
+                <div class="form-group">
+                    <label>Danh mục phân loại (Type)</label>
+                    <select id="thu-type" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Danh mục chi tiết (Subtype)</label>
+                    <select id="thu-subtype" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền (VND)</label>
+                    <input type="text" id="thu-amount" inputmode="numeric" class="form-control" placeholder="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Thời gian</label>
+                    <input type="datetime-local" id="thu-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <input type="text" id="thu-note" class="form-control" placeholder="Nhập ghi chú chi tiết...">
+                </div>
+                <button type="submit" class="btn">Ghi Khoản Thu</button>
+            </form>
+        </div>
+        <div class="card">
+            <h3>Lịch sử Thu</h3>
+            <div id="income-history-container">Đang tải lịch sử thu...</div>
+        </div>
+    </div>
+    <!-- end TAB THU -->
+
+    <!-- TAB NHẬT KÍ -->
+    <div id="tab-diary" class="tab-content">
+        <div class="card">
+            <h3>📝 Ghi Nhật Kí</h3>
+            <form id="form-diary">
+                <div class="form-group">
+                    <label>Ngày giờ</label>
+                    <input type="datetime-local" id="diary-datetime" class="form-control">
+                    <small style="color: var(--stat-label-color); font-size: 0.75rem;">Để trống để lấy thời gian hiện tại</small>
+                </div>
+                <div class="form-group">
+                    <label>Địa điểm (Place)</label>
+                    <select id="diary-place" class="form-control">
+                        <option value="Nhà mẹ">Nhà mẹ</option>
+                        <option value="Nhà mình">Nhà mình</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group" id="diary-custom-place-group" style="display: none;">
+                    <label>Nhập địa điểm</label>
+                    <input type="text" id="diary-custom-place" class="form-control" placeholder="Nhập địa điểm...">
+                </div>
+                <div class="form-group">
+                    <label>Chi tiết (Detail)</label>
+                    <textarea id="diary-detail" class="form-control" rows="3" placeholder="Nhập chi tiết nhật kí..."></textarea>
+                </div>
+                <button type="submit" class="btn">💾 Lưu Nhật Kí</button>
+            </form>
+        </div>
+
+        <!-- THÊM NÚT THỐNG KÊ THỜI GIAN -->
+        <div class="card">
+            <button class="btn" id="btn-stat-time" style="background: linear-gradient(135deg, var(--theme-color), #FF9800) !important;">
+                📊 Thống kê thời gian
+            </button>
+        </div>
+
+        <!-- MODAL THỐNG KÊ THỜI GIAN -->
+        <div id="statTimeModal" class="modal">
+            <div class="modal-content" style="max-width: 550px;">
+                <button class="modal-close" id="btn-close-stat-time">&times;</button>
+                <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--theme-color); display: flex; align-items: center; gap: 10px;">
+                    <span>📊</span> Thống kê thời gian
+                </h3>
+                
+                <div class="form-group">
+                    <select id="stat-time-period" class="form-control">
+                        <option value="month" selected>Tháng này</option>
+                        <option value="year">Năm nay</option>
+                        <option value="all">Tất cả</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <div style="background: var(--secondary-bg); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--stat-label-color);">🏠 Nhà mình</div>
+                        <div style="font-size: 1.4rem; font-weight: bold; color: var(--theme-color);" id="stat-nhaminh">0</div>
+                        <div style="font-size: 0.65rem; color: var(--stat-label-color);">ngày</div>
+                    </div>
+                    <div style="background: var(--secondary-bg); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--stat-label-color);">🏡 Nhà mẹ</div>
+                        <div style="font-size: 1.4rem; font-weight: bold; color: #4CAF50;" id="stat-nhame">0</div>
+                        <div style="font-size: 0.65rem; color: var(--stat-label-color);">ngày</div>
+                    </div>
+                    <div style="background: var(--secondary-bg); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--stat-label-color);">🌍 Nơi khác</div>
+                        <div style="font-size: 1.4rem; font-weight: bold; color: #FF9800;" id="stat-noikhac">0</div>
+                        <div style="font-size: 0.65rem; color: var(--stat-label-color);">ngày</div>
+                    </div>
+                </div>
+                
+                <div class="stat-row" style="border-top: 2px solid var(--border-color); padding-top: 10px; margin-bottom: 15px;">
+                    <span style="font-weight: bold;">📊 Tổng số ngày:</span>
+                    <strong id="stat-total" style="color: var(--text-color);">0 ngày</strong>
+                </div>
+                
+                <h4 style="margin: 10px 0 10px 0; color: var(--text-color); font-size: 0.95rem;">📈 Tần suất theo địa điểm</h4>
+                <div class="chart-container" style="height: 180px;">
+                    <canvas id="chart-stat-bar"></canvas>
+                </div>
+                
+                <h4 style="margin: 15px 0 10px 0; color: var(--text-color); font-size: 0.95rem;">📊 Tỷ lệ thời gian</h4>
+                <div class="chart-container" style="height: 180px;">
+                    <canvas id="chart-stat-pie"></canvas>
+                </div>
+                
+                <button class="btn" id="btn-refresh-stat" style="margin-top: 15px; background: var(--secondary-bg) !important; color: var(--text-color) !important;">🔄 Làm mới</button>
+            </div>
+        </div>
+        <!-- end MODAL THỐNG KÊ THỜI GIAN -->
+
+        <div class="card">
+            <h3>📖 Lịch sử Nhật Kí</h3>
+            <div id="diary-history-container">Đang tải lịch sử nhật kí...</div>
+        </div>
+    </div>
+    <!-- end TAB NHẬT KÍ -->
+
+    <!-- TAB THỐNG KÊ -->
+    <div id="tab-thongke" class="tab-content">
+        <div class="card">
+            <h3>Section 1: Cảnh Báo Vượt Hạn Mức (So với tháng trước)</h3>
+            <div id="section1-alerts"></div>
+        </div>
+
+        <div class="card">
+            <h3>Section 2: Tổng Quan Thu - Chi</h3>
+            <div class="stat-row"><span>Tổng Thu:</span><strong id="sec2-thu" style="color:var(--success-color);">0</strong></div>
+            <div class="stat-row"><span>Tổng Chi:</span><strong id="sec2-chi" style="color:var(--danger-color);">0</strong></div>
+            <div class="stat-row"><span>Còn Lại:</span><strong id="sec2-remain">0</strong></div>
+            <div class="chart-container">
+                <canvas id="chart-sec2-pie"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Section 3: Tỷ Lệ Nguồn Thu</h3>
+            <div class="stat-row"><span style="color: #8BC34A; font-weight: bold;">MÌNH</span><strong id="sec3-Mine" style="color: #8BC34A; font-weight: bold;">0</strong></div>
+            <div class="stat-row"><span style="color: #E91E63; font-weight: bold;">CON CỢP</span><strong id="sec3-Tiger" style="color: #E91E63; font-weight: bold;">0</strong></div>
+            <div class="chart-container">
+                <canvas id="chart-sec3-pie"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Section 4: Báo Cáo Định Kỳ</h3>
+            <div class="form-group">
+                <select id="sec4-period" class="form-control">
+                    <option value="month" selected>Tháng này</option>
+                    <option value="year">Năm nay</option>
+                </select>
+            </div>
+            <div class="stat-row"><span>Số Dư Hiện Tại:</span><strong id="sec4-balance">0</strong></div>
+            <div class="stat-row"><span>Tổng Thu:</span><strong id="sec4-thu" style="color:#4CAF50;">0</strong></div>
+            <div class="stat-row"><span>Tổng Chi Thực Tế:</span><strong id="sec4-net-chi" style="color:#F44336;">0</strong></div>
+            <div class="stat-row"><span>Tổng Số Tiền Tiết Kiệm:</span><strong id="sec4-savings" style="color:#FFEB3B;">0</strong></div>
+            <div class="chart-container">
+                <canvas id="chart-sec4-pie"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- end TAB THỐNG KÊ -->
+
+    <!-- TAB FAMILY -->
+    <div id="tab-family" class="tab-content">
+        <div id="family-auth-view" class="card" style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 48px; margin-bottom: 15px;">🔒</div>
+            <h3>Nội dung này được bảo mật</h3>
+            <p style="color: #aaa; font-size: 13px; margin-bottom: 20px;">Nhập mật khẩu để xem thông tin gia đình.</p>
+            <div style="margin-bottom: 15px;">
+                <input type="password" id="family-password" placeholder="Nhập mật khẩu..." style="padding: 10px; width: 80%; max-width: 250px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; text-align: center;">
+            </div>
+            <button class="btn" id="btn-verify-family" style="width: 100%; max-width: 250px; margin: 0 auto;">🔑 Xác thực truy cập</button>
+        </div>
+
+        <div id="family-main-view" style="display: none;">
+            <div class="card">
+                <h3>Thành viên gia đình</h3>
+                <div id="family-buttons-container" class="family-grid"></div>
+            </div>
+        </div>
+    </div>
+    <!-- end TAB FAMILY -->
+
+    <!-- TAB NHẮC HẸN -->
+    <div id="tab-nhachen" class="tab-content">
+        <div class="card">
+            <h3>Thiết Lập Nhắc Hẹn</h3>
+            <form id="form-nhachen">
+                <div class="form-group">
+                    <label>Nội dung nhắc hẹn</label>
+                    <input type="text" id="rem-content" class="form-control" placeholder="Ví dụ: Đóng tiền nước, Khám định kỳ..." required>
+                </div>
+                <div class="form-group">
+                    <label>Ngày bắt đầu (Ngày / Tháng / Năm)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="rem-day" class="form-control" style="flex: 1;"></select>
+                        <select id="rem-month" class="form-control" style="flex: 1;"></select>
+                        <select id="rem-year" class="form-control" style="flex: 1.2;"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tần suất nhắc hẹn</label>
+                    <select id="rem-frequency" class="form-control">
+                        <option value="ONCE">Một lần</option>
+                        <option value="DAILY">Hàng ngày</option>
+                        <option value="WEEKLY">Hàng tuần</option>
+                        <option value="MONTHLY">Hàng tháng</option>
+                        <option value="CUSTOM">Tùy chỉnh</option>
+                    </select>
+                </div>
+                <div id="custom-reminder-fields" style="display: none; border-left: 3px solid var(--theme-color); padding-left: 12px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label>Lặp lại mỗi (EVERY)</label>
+                        <input type="number" inputmode="numeric" id="rem-every-val" class="form-control" min="1" value="1" placeholder="Nhập số lượng...">
+                    </div>
+                    <div class="form-group">
+                        <label>Đơn vị thời gian</label>
+                        <select id="rem-every-unit" class="form-control">
+                            <option value="DAYS">Ngày</option>
+                            <option value="WEEKS">Tuần</option>
+                            <option value="MONTHS">Tháng</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Lưu Nhắc Hẹn</button>
+            </form>
+        </div>
+        <div class="card">
+            <h3>Danh Sách Lịch Hẹn</h3>
+            <div id="reminder-list-container">Đang tải danh sách nhắc hẹn...</div>
+        </div>
+    </div>
+    <!-- end TAB NHẮC HẸN -->
+
+
+<!-- FAMILY MODAL -->
+    <div id="familyModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="btn-close-modal-family">&times;</button>
+            <h3 id="modal-member-title" style="margin-top: 0; margin-bottom: 15px; color: var(--theme-color);">Thông tin lý lịch</h3>
+            <div id="modal-member-details" style="margin-bottom: 20px;"></div>
+            <button id="btn-copy-all" class="btn">📋 Sao chép toàn bộ thông tin</button>
+        </div>
+    </div>
+    <!-- end FAMILY MODAL -->
+
+<!-- ---------------------------------------------------------------------
+     TẠM ẨN: khối Settings + App Info gốc của module Gia đình.
+     Sẽ được BƯỚC 4 (Settings toàn app) tái sử dụng — script.js vẫn cần
+     các id này tồn tại trong DOM để gắn sự kiện, nên giữ nguyên, chỉ ẩn UI.
+     --------------------------------------------------------------------- -->
+<div id="finance-legacy-settings" style="display:none;" aria-hidden="true">
+
+    <!-- TAB SETTINGS -->
+    <div id="tab-settings" class="tab-content">
+        <div class="card">
+            <h3>Thay Đổi Giao Diện</h3>
+            <div class="theme-switch-wrapper">
+                <span>🌙 Dark Mode</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Màu chủ đạo (Theme)</label>
+                <select id="setting-color" class="form-control"></select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Dữ liệu & Đồng bộ</h3>
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 12px;">Cập nhật thông tin thành viên gia đình mới nhất.</p>
+            <button class="btn" id="btn-sync-data">🔄 Đồng bộ dữ liệu</button>
+            <div id="sync-status" style="font-size: 12px; color: #aaa; margin-top: 8px; text-align: center;"></div>
+            
+            <button class="btn" id="btn-reset-app" style="background-color: #F44336 !important; color: #fff !important; width: 100%; margin-top: 15px;">🗑️ Xóa sạch dữ liệu & Đặt lại App</button>
+        </div>
+
+        <!-- NÚT MỞ MODAL THÔNG TIN ỨNG DỤNG -->
+        <div class="card" style="text-align: center; cursor: pointer;" id="btn-app-info">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="font-size: 20px;">ℹ️</span>
+                <span style="font-weight: 500; color: var(--theme-color);">Thông tin ứng dụng</span>
+                <span style="font-size: 12px; color: var(--stat-label-color);">(nhấn để xem)</span>
+            </div>
+            <div style="font-size: 11px; color: var(--stat-label-color); margin-top: 4px; opacity: 0.7;">
+                Phiên bản <span id="app-version-mini">1.0.0</span>
+            </div>
+        </div>
+        <!-- end NÚT MỞ MODAL THÔNG TIN ỨNG DỤNG -->
+    </div>
+    <!-- end TAB SETTINGS -->
+
+<!-- MODAL THÔNG TIN ỨNG DỤNG -->
+    <div id="appInfoModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" id="btn-close-app-info">&times;</button>
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--theme-color); display: flex; align-items: center; gap: 10px;">
+                <span>ℹ️</span> Thông tin ứng dụng
+            </h3>
+            <div class="app-info-modal">
+                <div class="info-row-app">
+                    <span class="info-label-app">📱 Ứng dụng:</span>
+                    <span class="info-value-app" style="font-weight: 600; color: var(--theme-color);">TÔI - Quản lý tài chính</span>
+                </div>
+                <div class="info-row-app">
+                    <span class="info-label-app">🔨 Phiên bản:</span>
+                    <span class="info-value-app" id="app-version">1.0.0</span>
+                </div>
+                <div class="info-row-app">
+                    <span class="info-label-app">📅 Last build:</span>
+                    <span class="info-value-app" id="app-build-date">--/--/---- --:--:--</span>
+                </div>
+                <div class="info-row-app">
+                    <span class="info-label-app">🔄 Last sync:</span>
+                    <span class="info-value-app" id="app-last-sync">Chưa đồng bộ</span>
+                </div>
+                <div class="info-row-app">
+                    <span class="info-label-app">📊 Tổng giao dịch:</span>
+                    <span class="info-value-app" id="app-total-transactions">0</span>
+                </div>
+                <div class="info-row-app">
+                    <span class="info-label-app">⏰ Tổng nhắc hẹn:</span>
+                    <span class="info-value-app" id="app-total-reminders">0</span>
+                </div>
+                <div class="info-row-app" style="border-bottom: none; padding-bottom: 0;">
+                    <span class="info-label-app">👨‍👩‍👧‍👦 Thành viên:</span>
+                    <span class="info-value-app" id="app-total-family">0</span>
+                </div>
+            </div>
+            <button class="btn" id="btn-refresh-app-info" style="margin-top: 15px;">🔄 Làm mới</button>
+        </div>
+    </div>
+    <!-- end MODAL THÔNG TIN ỨNG DỤNG -->
+
+</div>
+<!-- end TẠM ẨN finance-legacy-settings -->
+
+</div>
+<!-- end MODULE: QUẢN LÍ GIA ĐÌNH -->
