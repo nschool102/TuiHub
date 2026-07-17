@@ -1911,7 +1911,7 @@ function saveHealthOnly() {
     
     // Lấy giá trị từ form
     let datetimeVal = document.getElementById('diary-datetime').value;
-    const weight = parseFloat(document.getElementById('diary-weight').value);
+    const weight = parseFloat(document.getElementById('diary-weight').value.replace(',', '.'));
     const bloodPressure = document.getElementById('diary-blood-pressure').value.trim();
     const heartRate = parseInt(document.getElementById('diary-heart-rate').value);
     const dau = document.getElementById('diary-dau').checked;
@@ -2099,7 +2099,7 @@ function saveDiaryEntry(event) {
     let detail = document.getElementById('diary-detail').value.trim();
     
     // Lấy giá trị Health Check
-    const weight = parseFloat(document.getElementById('diary-weight').value);
+    const weight = parseFloat(document.getElementById('diary-weight').value.replace(',', '.'));
     const bloodPressure = document.getElementById('diary-blood-pressure').value.trim();
     const heartRate = parseInt(document.getElementById('diary-heart-rate').value);
     const dau = document.getElementById('diary-dau').checked;

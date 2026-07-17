@@ -11,13 +11,13 @@
       <div class="basic-input-row" data-idx="1">
         <label>Số 1</label>
         <div class="basic-input-row-inner">
-          <input type="number" class="basic-input-el" id="b0-1" placeholder="0" oninput="Calc.calcBasic()">
+          <input type="text" inputmode="decimal" class="basic-input-el" id="b0-1" placeholder="0" oninput="Calc.calcBasic()">
         </div>
       </div>
       <div class="basic-input-row" data-idx="2">
         <label>Số 2</label>
         <div class="basic-input-row-inner">
-          <input type="number" class="basic-input-el" id="b0-2" placeholder="0" oninput="Calc.calcBasic()">
+          <input type="text" inputmode="decimal" class="basic-input-el" id="b0-2" placeholder="0" oninput="Calc.calcBasic()">
         </div>
       </div>
     </div>
@@ -40,8 +40,8 @@
       <div class="chip" data-unit="trieu">Triệu</div>
       <div class="chip" data-unit="k">K</div>
     </div>
-    <div class="field"><label>Số tiền gốc</label><input type="number" id="b1-a" placeholder="Ví dụ: 15" oninput="Calc.calcPct()"></div>
-    <div class="field"><label>Phần trăm (%)</label><input type="number" id="b1-b" placeholder="Ví dụ: 5" oninput="Calc.calcPct()"></div>
+    <div class="field"><label>Số tiền gốc</label><input type="text" inputmode="decimal" id="b1-a" placeholder="Ví dụ: 15" oninput="Calc.calcPct()"></div>
+    <div class="field"><label>Phần trăm (%)</label><input type="text" inputmode="decimal" id="b1-b" placeholder="Ví dụ: 5" oninput="Calc.calcPct()"></div>
   </div>
   <div class="card">
     <div class="card-title">📤 Kết quả</div>
@@ -53,8 +53,8 @@
 <div class="panel" id="panel-2">
   <div class="card">
     <div class="card-title">📥 Nhập số</div>
-    <div class="field"><label>Số A</label><input type="number" id="b2-a" placeholder="Ví dụ: 120" oninput="Calc.calcRatio()"></div>
-    <div class="field"><label>Số B</label><input type="number" id="b2-b" placeholder="Ví dụ: 150" oninput="Calc.calcRatio()"></div>
+    <div class="field"><label>Số A</label><input type="text" inputmode="decimal" id="b2-a" placeholder="Ví dụ: 120" oninput="Calc.calcRatio()"></div>
+    <div class="field"><label>Số B</label><input type="text" inputmode="decimal" id="b2-b" placeholder="Ví dụ: 150" oninput="Calc.calcRatio()"></div>
   </div>
   <div class="card">
     <div class="card-title">📤 Kết quả</div>
@@ -71,9 +71,9 @@
       <div class="chip" data-unit="trieu">Triệu</div>
       <div class="chip" data-unit="dong">Đồng</div>
     </div>
-    <div class="field"><label>Vốn</label><input type="number" id="ls-von" placeholder="Ví dụ: 100000000" oninput="Calc.calcInterest()"></div>
-    <div class="field"><label>Lãi suất năm (%)</label><input type="number" id="ls-rate" placeholder="Ví dụ: 7.5" step="0.01" oninput="Calc.calcInterest()"></div>
-    <div class="field"><label>Số tháng</label><input type="number" id="ls-months" placeholder="Ví dụ: 12" oninput="Calc.calcInterest()"></div>
+    <div class="field"><label>Vốn</label><input type="text" inputmode="decimal" id="ls-von" placeholder="Ví dụ: 100000000" oninput="Calc.calcInterest()"></div>
+    <div class="field"><label>Lãi suất năm (%)</label><input type="text" inputmode="decimal" id="ls-rate" placeholder="Ví dụ: 7.5" oninput="Calc.calcInterest()"></div>
+    <div class="field"><label>Số tháng</label><input type="text" inputmode="decimal" id="ls-months" placeholder="Ví dụ: 12" oninput="Calc.calcInterest()"></div>
   </div>
   <div class="card">
     <div class="card-title">📤 Kết quả</div>
@@ -94,9 +94,9 @@
       <div class="chip" data-unit="trieu">Triệu</div>
       <div class="chip" data-unit="dong">Đồng</div>
     </div>
-    <div class="field"><label>💰 Tiền trúng (chỉnh để tính)</label><input type="number" id="lott-win" placeholder="Nhập tiền trúng..." oninput="Calc.calcLottFrom('win')"></div>
-    <div class="field"><label>🏦 Thuế 10% (chỉ xem)</label><input type="number" id="lott-tax" placeholder="—" readonly class="result-field"></div>
-    <div class="field"><label>✅ Tiền thực nhận (chỉnh để tính ngược)</label><input type="number" id="lott-net" placeholder="Nhập tiền thực nhận..." oninput="Calc.calcLottFrom('net')"></div>
+    <div class="field"><label>💰 Tiền trúng (chỉnh để tính)</label><input type="text" inputmode="decimal" id="lott-win" placeholder="Nhập tiền trúng..." oninput="Calc.calcLottFrom('win')"></div>
+    <div class="field"><label>🏦 Thuế 10% (chỉ xem)</label><input type="text" inputmode="decimal" id="lott-tax" placeholder="—" readonly class="result-field"></div>
+    <div class="field"><label>✅ Tiền thực nhận (chỉnh để tính ngược)</label><input type="text" inputmode="decimal" id="lott-net" placeholder="Nhập tiền thực nhận..." oninput="Calc.calcLottFrom('net')"></div>
   </div>
   <div class="card">
     <div class="card-title">📊 Tóm tắt</div>
@@ -134,9 +134,9 @@
       <div class="chip" data-unit="trieu">Triệu</div>
       <div class="chip" data-unit="dong">Đồng</div>
     </div>
-    <div class="field"><label>Chiều dài (m)</label><input type="number" id="nh-dai" placeholder="Ví dụ: 10" step="0.1" oninput="Calc.calcHouse()"></div>
-    <div class="field"><label>Chiều rộng (m)</label><input type="number" id="nh-rong" placeholder="Ví dụ: 5" step="0.1" oninput="Calc.calcHouse()"></div>
-    <div class="field"><label>Giá bán (để trống nếu chỉ tính diện tích)</label><input type="number" id="nh-gia" placeholder="Không bắt buộc" oninput="Calc.calcHouse()"></div>
+    <div class="field"><label>Chiều dài (m)</label><input type="text" inputmode="decimal" id="nh-dai" placeholder="Ví dụ: 10" oninput="Calc.calcHouse()"></div>
+    <div class="field"><label>Chiều rộng (m)</label><input type="text" inputmode="decimal" id="nh-rong" placeholder="Ví dụ: 5" oninput="Calc.calcHouse()"></div>
+    <div class="field"><label>Giá bán (để trống nếu chỉ tính diện tích)</label><input type="text" inputmode="decimal" id="nh-gia" placeholder="Không bắt buộc" oninput="Calc.calcHouse()"></div>
   </div>
   <div class="card" id="house-results" style="display:none">
     <div class="card-title">📤 Kết quả</div>
@@ -153,8 +153,8 @@
       <div class="chip" data-unit="trieu">Triệu</div>
       <div class="chip active" data-unit="k">K</div>
     </div>
-    <div class="field"><label>Tổng tiền</label><input type="number" id="sp-total" placeholder="Ví dụ: 275" oninput="Calc.calcSplit()"></div>
-    <div class="field"><label>Số người</label><input type="number" id="sp-people" placeholder="Ví dụ: 5" min="1" oninput="Calc.calcSplit()"></div>
+    <div class="field"><label>Tổng tiền</label><input type="text" inputmode="decimal" id="sp-total" placeholder="Ví dụ: 275" oninput="Calc.calcSplit()"></div>
+    <div class="field"><label>Số người</label><input type="text" inputmode="decimal" id="sp-people" placeholder="Ví dụ: 5" min="1" oninput="Calc.calcSplit()"></div>
   </div>
   <div class="card">
     <div class="card-title">📤 Kết quả</div>
@@ -171,14 +171,14 @@
       <div class="chip" data-unit="trieu">Triệu</div>
       <div class="chip active" data-unit="k">K</div>
     </div>
-    <div class="field"><label>Giá gốc</label><input type="number" id="sh-price" placeholder="Ví dụ: 345" oninput="Calc.calcShop()"></div>
-    <div class="field"><label>% Giảm giá</label><input type="number" id="sh-disc" placeholder="Ví dụ: 20" oninput="Calc.calcShop()"></div>
+    <div class="field"><label>Giá gốc</label><input type="text" inputmode="decimal" id="sh-price" placeholder="Ví dụ: 345" oninput="Calc.calcShop()"></div>
+    <div class="field"><label>% Giảm giá</label><input type="text" inputmode="decimal" id="sh-disc" placeholder="Ví dụ: 20" oninput="Calc.calcShop()"></div>
     <div id="shop-results" style="margin-top:10px"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập giá gốc và % giảm...</span></div></div>
   </div>
   <div class="card">
     <div class="card-title">📦 Giá theo đơn vị</div>
-    <div class="field"><label>Giá bán (tổng)</label><input type="number" id="sh-total" placeholder="Ví dụ: 90" oninput="Calc.calcUnit()"></div>
-    <div class="field"><label>Số lượng</label><input type="number" id="sh-qty" placeholder="Ví dụ: 3" min="1" oninput="Calc.calcUnit()"></div>
+    <div class="field"><label>Giá bán (tổng)</label><input type="text" inputmode="decimal" id="sh-total" placeholder="Ví dụ: 90" oninput="Calc.calcUnit()"></div>
+    <div class="field"><label>Số lượng</label><input type="text" inputmode="decimal" id="sh-qty" placeholder="Ví dụ: 3" min="1" oninput="Calc.calcUnit()"></div>
     <div id="unit-results" style="margin-top:10px"><div class="result-row"><span class="result-label" style="color:var(--text3);font-size:12px">Nhập giá bán và số lượng...</span></div></div>
   </div>
 </div>
@@ -192,7 +192,7 @@
     <div class="cv-row">
       <div>
         <div class="cv-label">Hệ Anh/Mỹ <span class="sys-badge sys-en">EN</span></div>
-        <input type="number" id="len-en" placeholder="0" oninput="Calc.cvLen('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="len-en" placeholder="0" oninput="Calc.cvLen('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
         <select id="len-en-u" onchange="Calc.cvLen('en')" class="cv-sel">
           <option value="in">inch (in)</option>
           <option value="ft">foot (ft)</option>
@@ -203,7 +203,7 @@
       <div class="cv-mid">⇄</div>
       <div>
         <div class="cv-label">Hệ SI <span class="sys-badge sys-si">SI</span></div>
-        <input type="number" id="len-si" placeholder="0" oninput="Calc.cvLen('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="len-si" placeholder="0" oninput="Calc.cvLen('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
         <select id="len-si-u" onchange="Calc.cvLen('en')" class="cv-sel">
           <option value="mm">mm</option>
           <option value="cm">cm</option>
@@ -220,7 +220,7 @@
     <div class="cv-row">
       <div>
         <div class="cv-label">Hệ Anh/Mỹ <span class="sys-badge sys-en">EN</span></div>
-        <input type="number" id="wt-en" placeholder="0" oninput="Calc.cvWt('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="wt-en" placeholder="0" oninput="Calc.cvWt('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
         <select id="wt-en-u" onchange="Calc.cvWt('en')" class="cv-sel">
           <option value="oz">ounce (oz)</option>
           <option value="lb">pound (lb)</option>
@@ -229,7 +229,7 @@
       <div class="cv-mid">⇄</div>
       <div>
         <div class="cv-label">Hệ SI <span class="sys-badge sys-si">SI</span></div>
-        <input type="number" id="wt-si" placeholder="0" oninput="Calc.cvWt('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="wt-si" placeholder="0" oninput="Calc.cvWt('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
         <select id="wt-si-u" onchange="Calc.cvWt('en')" class="cv-sel">
           <option value="g">gram (g)</option>
           <option value="kg">kilogram (kg)</option>
@@ -245,7 +245,7 @@
     <div class="cv-row">
       <div>
         <div class="cv-label">Hệ Anh/Mỹ <span class="sys-badge sys-en">EN</span></div>
-        <input type="number" id="vol-en" placeholder="0" oninput="Calc.cvVol('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="vol-en" placeholder="0" oninput="Calc.cvVol('en')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
         <select id="vol-en-u" onchange="Calc.cvVol('en')" class="cv-sel">
           <option value="floz">fl oz (US)</option>
           <option value="pt">pint (US)</option>
@@ -256,7 +256,7 @@
       <div class="cv-mid">⇄</div>
       <div>
         <div class="cv-label">Hệ SI <span class="sys-badge sys-si">SI</span></div>
-        <input type="number" id="vol-si" placeholder="0" oninput="Calc.cvVol('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="vol-si" placeholder="0" oninput="Calc.cvVol('si')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
         <select id="vol-si-u" onchange="Calc.cvVol('en')" class="cv-sel">
           <option value="ml">ml</option>
           <option value="lit">lít (L)</option>
@@ -272,12 +272,12 @@
     <div class="cv-row">
       <div>
         <div class="cv-label">°F <span class="sys-badge sys-en">EN</span></div>
-        <input type="number" id="temp-f" placeholder="°F" oninput="Calc.cvTemp('f')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="temp-f" placeholder="°F" oninput="Calc.cvTemp('f')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
       </div>
       <div class="cv-mid">⇄</div>
       <div>
         <div class="cv-label">°C <span class="sys-badge sys-si">SI</span></div>
-        <input type="number" id="temp-c" placeholder="°C" oninput="Calc.cvTemp('c')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="temp-c" placeholder="°C" oninput="Calc.cvTemp('c')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
       </div>
     </div>
   </div>
@@ -288,12 +288,12 @@
     <div class="cv-row">
       <div>
         <div class="cv-label">km/h</div>
-        <input type="number" id="spd-kmh" placeholder="km/h" oninput="Calc.cvSpd('kmh')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="spd-kmh" placeholder="km/h" oninput="Calc.cvSpd('kmh')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
       </div>
       <div class="cv-mid">⇄</div>
       <div>
         <div class="cv-label">m/s</div>
-        <input type="number" id="spd-ms" placeholder="m/s" oninput="Calc.cvSpd('ms')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
+        <input type="text" inputmode="decimal" id="spd-ms" placeholder="m/s" oninput="Calc.cvSpd('ms')" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none">
       </div>
     </div>
   </div>

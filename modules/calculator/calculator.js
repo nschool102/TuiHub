@@ -88,7 +88,7 @@ function numFmt(v) {
 // Trung bình, Lớn nhất/Nhỏ nhất, Hiệu tuần tự, Thương tuần tự theo đúng thứ tự nhập).
 function getBasicValues() {
   const inputs = Array.from(document.querySelectorAll('#b0-inputs-list .basic-input-el'));
-  return inputs.map(el => parseFloat(el.value)).filter(v => !isNaN(v));
+  return inputs.map(el => parseFloat(String(el.value).replace(',', '.'))).filter(v => !isNaN(v));
 }
 
 function addBasicInput() {
@@ -103,7 +103,7 @@ function addBasicInput() {
   row.innerHTML = `
     <label>Số ${newIdx}</label>
     <div class="basic-input-row-inner">
-      <input type="number" class="basic-input-el" placeholder="0">
+      <input type="text" inputmode="decimal" class="basic-input-el" placeholder="0">
       <button type="button" class="basic-remove-btn" aria-label="Xóa số này">✕</button>
     </div>`;
   list.appendChild(row);
@@ -199,8 +199,8 @@ function calcBasic() {
 function calcPct() {
   const unit = unitStates['1'] || 'ty';
   const mult = unitMultipliers[unit];
-  const aRaw = parseFloat(document.getElementById('b1-a').value);
-  const b    = parseFloat(document.getElementById('b1-b').value);
+  const aRaw = parseFloat(document.getElementById('b1-a').value.replace(',', '.'));
+  const b    = parseFloat(document.getElementById('b1-b').value.replace(',', '.'));
   const container = document.getElementById('pct-results');
 
   // Build display label for the amount
@@ -234,8 +234,8 @@ function calcPct() {
 
 // ===== TAB 2 =====
 function calcRatio() {
-  const a = parseFloat(document.getElementById('b2-a').value);
-  const b = parseFloat(document.getElementById('b2-b').value);
+  const a = parseFloat(document.getElementById('b2-a').value.replace(',', '.'));
+  const b = parseFloat(document.getElementById('b2-b').value.replace(',', '.'));
   const container = document.getElementById('ratio-results');
 
   if (isNaN(a) || isNaN(b)) {
@@ -271,9 +271,9 @@ function calcRatio() {
 // ===== TAB 3 =====
 function calcInterest() {
   const mult = getMultiplier('3');
-  const von = parseFloat(document.getElementById('ls-von').value)*mult;
-  const rate = parseFloat(document.getElementById('ls-rate').value);
-  const months = parseFloat(document.getElementById('ls-months').value);
+  const von = parseFloat(document.getElementById('ls-von').value.replace(',', '.'))*mult;
+  const rate = parseFloat(document.getElementById('ls-rate').value.replace(',', '.'));
+  const months = parseFloat(document.getElementById('ls-months').value.replace(',', '.'));
   if (isNaN(von)||isNaN(rate)||isNaN(months)) { ['ls-monthly','ls-total-int','ls-grand'].forEach(id=>document.getElementById(id).textContent='—'); return; }
   const monthly = von*rate/100/12;
   const totalInt = monthly*months;
@@ -289,7 +289,7 @@ function calcLottFrom(src) {
   lottLock = true;
   const mult = getMultiplier('4');
   if (src==='win') {
-    const win = parseFloat(document.getElementById('lott-win').value)*mult;
+    const win = parseFloat(document.getElementById('lott-win').value.replace(',', '.'))*mult;
     if (!isNaN(win)) {
       const tax=win*0.1, net=win*0.9;
       document.getElementById('lott-tax').value = parseFloat((tax/mult).toFixed(4));
@@ -299,7 +299,7 @@ function calcLottFrom(src) {
       document.getElementById('lott-sum-net').textContent = fmtMoney(net);
     } else clearLott();
   } else {
-    const net = parseFloat(document.getElementById('lott-net').value)*mult;
+    const net = parseFloat(document.getElementById('lott-net').value.replace(',', '.'))*mult;
     if (!isNaN(net)) {
       const win=net/0.9, tax=win*0.1;
       document.getElementById('lott-win').value = parseFloat((win/mult).toFixed(4));
@@ -362,9 +362,9 @@ function clearDates() { document.getElementById('date-start').value=''; document
 // ===== TAB 6 =====
 function calcHouse() {
   const mult = getMultiplier('6');
-  const dai  = parseFloat(document.getElementById('nh-dai').value);
-  const rong = parseFloat(document.getElementById('nh-rong').value);
-  const gia  = parseFloat(document.getElementById('nh-gia').value)*mult;
+  const dai  = parseFloat(document.getElementById('nh-dai').value.replace(',', '.'));
+  const rong = parseFloat(document.getElementById('nh-rong').value.replace(',', '.'));
+  const gia  = parseFloat(document.getElementById('nh-gia').value.replace(',', '.'))*mult;
   if (isNaN(dai)||isNaN(rong)) { document.getElementById('house-results').style.display='none'; return; }
   const area = dai*rong;
   const grid = document.getElementById('house-grid');
@@ -383,8 +383,8 @@ function calcHouse() {
 function calcSplit() {
   const unit = unitStates['7'] || 'k';
   const mult = unitMultipliers[unit];
-  const totalRaw = parseFloat(document.getElementById('sp-total').value);
-  const people   = parseFloat(document.getElementById('sp-people').value);
+  const totalRaw = parseFloat(document.getElementById('sp-total').value.replace(',', '.'));
+  const people   = parseFloat(document.getElementById('sp-people').value.replace(',', '.'));
   const container = document.getElementById('split-results');
 
   if (isNaN(totalRaw) || isNaN(people) || people <= 0) {
@@ -410,8 +410,8 @@ function calcSplit() {
 function calcShop() {
   const unit = unitStates['8'] || 'k';
   const mult = unitMultipliers[unit];
-  const priceRaw = parseFloat(document.getElementById('sh-price').value);
-  const disc     = parseFloat(document.getElementById('sh-disc').value);
+  const priceRaw = parseFloat(document.getElementById('sh-price').value.replace(',', '.'));
+  const disc     = parseFloat(document.getElementById('sh-disc').value.replace(',', '.'));
   const container = document.getElementById('shop-results');
   const unitLabel = unit === 'ty' ? 'tỉ' : unit === 'trieu' ? 'triệu' : 'K';
 
@@ -440,8 +440,8 @@ function calcShop() {
 function calcUnit() {
   const unit = unitStates['8'] || 'k';
   const mult = unitMultipliers[unit];
-  const totalRaw = parseFloat(document.getElementById('sh-total').value);
-  const qty      = parseFloat(document.getElementById('sh-qty').value);
+  const totalRaw = parseFloat(document.getElementById('sh-total').value.replace(',', '.'));
+  const qty      = parseFloat(document.getElementById('sh-qty').value.replace(',', '.'));
   const container = document.getElementById('unit-results');
   const unitLabel = unit === 'ty' ? 'tỉ' : unit === 'trieu' ? 'triệu' : 'K';
 
@@ -469,11 +469,11 @@ function cvLen(src) {
   const enU = document.getElementById('len-en-u').value;
   const siU = document.getElementById('len-si-u').value;
   if (src==='en') {
-    const v = parseFloat(document.getElementById('len-en').value);
+    const v = parseFloat(document.getElementById('len-en').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('len-si').value=''; return; }
     document.getElementById('len-si').value = fmtCv(v*lenToM[enU]/lenToM[siU]);
   } else {
-    const v = parseFloat(document.getElementById('len-si').value);
+    const v = parseFloat(document.getElementById('len-si').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('len-en').value=''; return; }
     document.getElementById('len-en').value = fmtCv(v*lenToM[siU]/lenToM[enU]);
   }
@@ -485,11 +485,11 @@ function cvWt(src) {
   const enU = document.getElementById('wt-en-u').value;
   const siU = document.getElementById('wt-si-u').value;
   if (src==='en') {
-    const v = parseFloat(document.getElementById('wt-en').value);
+    const v = parseFloat(document.getElementById('wt-en').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('wt-si').value=''; return; }
     document.getElementById('wt-si').value = fmtCv(v*wtToKg[enU]/wtToKg[siU]);
   } else {
-    const v = parseFloat(document.getElementById('wt-si').value);
+    const v = parseFloat(document.getElementById('wt-si').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('wt-en').value=''; return; }
     document.getElementById('wt-en').value = fmtCv(v*wtToKg[siU]/wtToKg[enU]);
   }
@@ -501,11 +501,11 @@ function cvVol(src) {
   const enU = document.getElementById('vol-en-u').value;
   const siU = document.getElementById('vol-si-u').value;
   if (src==='en') {
-    const v = parseFloat(document.getElementById('vol-en').value);
+    const v = parseFloat(document.getElementById('vol-en').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('vol-si').value=''; return; }
     document.getElementById('vol-si').value = fmtCv(v*volToL[enU]/volToL[siU]);
   } else {
-    const v = parseFloat(document.getElementById('vol-si').value);
+    const v = parseFloat(document.getElementById('vol-si').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('vol-en').value=''; return; }
     document.getElementById('vol-en').value = fmtCv(v*volToL[siU]/volToL[enU]);
   }
@@ -514,11 +514,11 @@ function cvVol(src) {
 // --- Nhiệt độ ---
 function cvTemp(src) {
   if (src==='f') {
-    const f = parseFloat(document.getElementById('temp-f').value);
+    const f = parseFloat(document.getElementById('temp-f').value.replace(',', '.'));
     if (isNaN(f)) { document.getElementById('temp-c').value=''; return; }
     document.getElementById('temp-c').value = fmtCv((f-32)*5/9);
   } else {
-    const c = parseFloat(document.getElementById('temp-c').value);
+    const c = parseFloat(document.getElementById('temp-c').value.replace(',', '.'));
     if (isNaN(c)) { document.getElementById('temp-f').value=''; return; }
     document.getElementById('temp-f').value = fmtCv(c*9/5+32);
   }
@@ -527,11 +527,11 @@ function cvTemp(src) {
 // --- Vận tốc ---
 function cvSpd(src) {
   if (src==='kmh') {
-    const v = parseFloat(document.getElementById('spd-kmh').value);
+    const v = parseFloat(document.getElementById('spd-kmh').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('spd-ms').value=''; return; }
     document.getElementById('spd-ms').value = fmtCv(v/3.6);
   } else {
-    const v = parseFloat(document.getElementById('spd-ms').value);
+    const v = parseFloat(document.getElementById('spd-ms').value.replace(',', '.'));
     if (isNaN(v)) { document.getElementById('spd-kmh').value=''; return; }
     document.getElementById('spd-kmh').value = fmtCv(v*3.6);
   }
