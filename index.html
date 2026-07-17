@@ -42,7 +42,7 @@
     <div id="hub-main">
 
 <!-- =========================================================================
-     MODULE: QUẢN LÍ GIA ĐÌNH (nguồn gốc: repo Tui)
+     MODULE: QUẢN LÍ GIA ĐÌNH (nguồn: index-withHealth.html + script-withHealth.js do user cung cấp)
      data-theme scoped trong khung module này, không đụng module khác
      ========================================================================= -->
 <div id="module-finance" class="app-module theme-yellow" data-theme="dark">
@@ -62,24 +62,28 @@
             <h3>Nhập Khoản Chi</h3>
             <form id="form-chi">
                 <div class="form-group">
-                    <label>Danh mục phân loại (Type)</label>
-                    <select id="chi-type" class="form-control"></select>
-                </div>
-                <div class="form-group">
-                    <label>Danh mục chi tiết (Subtype)</label>
-                    <select id="chi-subtype" class="form-control"></select>
-                </div>
-                <div class="form-group">
-                    <label>Số tiền (VND)</label>
-                    <input type="text" id="chi-amount" inputmode="numeric" class="form-control" placeholder="0" required>
-                </div>
-                <div class="form-group">
                     <label>Thời gian</label>
                     <input type="datetime-local" id="chi-date" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label>Ghi chú</label>
-                    <input type="text" id="chi-note" class="form-control" placeholder="Nhập ghi chú chi tiết...">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
+                    <div class="form-group">
+                        <label>Danh mục phân loại (Type)</label>
+                        <select id="chi-type" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Danh mục chi tiết (Subtype)</label>
+                        <select id="chi-subtype" class="form-control"></select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
+                    <div class="form-group">
+                        <label>Số tiền (VND)</label>
+                        <input type="text" id="chi-amount" inputmode="numeric" class="form-control" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <input type="text" id="chi-note" class="form-control" placeholder="Nhập ghi chú chi tiết...">
+                    </div>
                 </div>
                 <button type="submit" class="btn">Ghi Khoản Chi</button>
             </form>
@@ -126,24 +130,28 @@
             <h3>Nhập Khoản Thu</h3>
             <form id="form-thu">
                 <div class="form-group">
-                    <label>Danh mục phân loại (Type)</label>
-                    <select id="thu-type" class="form-control"></select>
-                </div>
-                <div class="form-group">
-                    <label>Danh mục chi tiết (Subtype)</label>
-                    <select id="thu-subtype" class="form-control"></select>
-                </div>
-                <div class="form-group">
-                    <label>Số tiền (VND)</label>
-                    <input type="text" id="thu-amount" inputmode="numeric" class="form-control" placeholder="0" required>
-                </div>
-                <div class="form-group">
                     <label>Thời gian</label>
                     <input type="datetime-local" id="thu-date" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label>Ghi chú</label>
-                    <input type="text" id="thu-note" class="form-control" placeholder="Nhập ghi chú chi tiết...">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
+                    <div class="form-group">
+                        <label>Danh mục phân loại (Type)</label>
+                        <select id="thu-type" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Danh mục chi tiết (Subtype)</label>
+                        <select id="thu-subtype" class="form-control"></select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
+                    <div class="form-group">
+                        <label>Số tiền (VND)</label>
+                        <input type="text" id="thu-amount" inputmode="numeric" class="form-control" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <input type="text" id="thu-note" class="form-control" placeholder="Nhập ghi chú chi tiết...">
+                    </div>
                 </div>
                 <button type="submit" class="btn">Ghi Khoản Thu</button>
             </form>
@@ -165,33 +173,69 @@
                     <input type="datetime-local" id="diary-datetime" class="form-control">
                     <small style="color: var(--stat-label-color); font-size: 0.75rem;">Để trống để lấy thời gian hiện tại</small>
                 </div>
-                <div class="form-group">
-                    <label>Địa điểm (Place)</label>
-                    <select id="diary-place" class="form-control">
-                        <option value="Nhà mẹ">Nhà mẹ</option>
-                        <option value="Nhà mình">Nhà mình</option>
-                        <option value="Custom">Custom</option>
-                    </select>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
+                    <div class="form-group">
+                        <label>Địa điểm (Place)</label>
+                        <select id="diary-place" class="form-control">
+                            <option value="Nhà mẹ">Nhà mẹ</option>
+                            <option value="Nhà mình">Nhà mình</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Chi tiết (Detail)</label>
+                        <textarea id="diary-detail" class="form-control" rows="3" placeholder="Nhập chi tiết nhật kí..."></textarea>
+                    </div>
                 </div>
                 <div class="form-group" id="diary-custom-place-group" style="display: none;">
                     <label>Nhập địa điểm</label>
                     <input type="text" id="diary-custom-place" class="form-control" placeholder="Nhập địa điểm...">
                 </div>
-                <div class="form-group">
-                    <label>Chi tiết (Detail)</label>
-                    <textarea id="diary-detail" class="form-control" rows="3" placeholder="Nhập chi tiết nhật kí..."></textarea>
+    
+                <!-- PHẦN HEALTH CHECK MỚI -->
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+                <h4 style="margin: 0 0 12px 0; color: var(--theme-color);">🏥 Health Check</h4>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 12px;">
+                    <div class="form-group">
+                        <label>Cân nặng (kg)</label>
+                        <input type="number" id="diary-weight" class="form-control" placeholder="Ví dụ: 65.5" min="0" max="300" step="0.01" inputmode="decimal">
+                        <small style="color: var(--stat-label-color); font-size: 0.75rem;">Có thể để trống</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Huyết áp (mmHg)</label>
+                        <input type="text" id="diary-blood-pressure" class="form-control" placeholder="Ví dụ: 120/80" maxlength="7" inputmode="numeric">
+                        <small style="color: var(--stat-label-color); font-size: 0.75rem;">Định dạng: ###/## (ví dụ: 120/80)</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Nhịp tim (bpm)</label>
+                        <input type="number" id="diary-heart-rate" class="form-control" placeholder="Ví dụ: 72" min="30" max="200">
+                    </div>
                 </div>
-                <button type="submit" class="btn">💾 Lưu Nhật Kí</button>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 12px;">
+                    <label style="margin-bottom: 0; cursor: pointer;">
+                        <input type="checkbox" id="diary-dau"> Có dâu
+                    </label>
+                </div>
+                <!-- END PHẦN HEALTH CHECK -->
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <button type="submit" class="btn" style="min-width: 0;">💾 Lưu Nhật Kí</button>
+                    <button type="button" class="btn" id="btn-save-health-only" style="min-width: 0; background: linear-gradient(135deg, #4CAF50, #2196F3) !important;">
+                        🏥 Lưu Health
+                    </button>
+                    <button type="button" class="btn" id="btn-stat-time" style="min-width: 0; background: linear-gradient(135deg, var(--theme-color), #FF9800) !important;">
+                        📊 Thống kê thời gian
+                    </button>
+                </div>
+                <small style="color: var(--stat-label-color); font-size: 0.75rem; display: block; margin-top: 8px;">
+                    💡 "Lưu Nhật Kí" sẽ lưu cả Diary và Health. "Lưu Health" chỉ lưu Health Check.
+                </small>
             </form>
         </div>
-
-        <!-- THÊM NÚT THỐNG KÊ THỜI GIAN -->
-        <div class="card">
-            <button class="btn" id="btn-stat-time" style="background: linear-gradient(135deg, var(--theme-color), #FF9800) !important;">
-                📊 Thống kê thời gian
-            </button>
-        </div>
-
+    
         <!-- MODAL THỐNG KÊ THỜI GIAN -->
         <div id="statTimeModal" class="modal">
             <div class="modal-content" style="max-width: 550px;">
@@ -245,7 +289,7 @@
             </div>
         </div>
         <!-- end MODAL THỐNG KÊ THỜI GIAN -->
-
+    
         <div class="card">
             <h3>📖 Lịch sử Nhật Kí</h3>
             <div id="diary-history-container">Đang tải lịch sử nhật kí...</div>
@@ -370,7 +414,6 @@
     </div>
     <!-- end TAB NHẮC HẸN -->
 
-
 <!-- FAMILY MODAL -->
     <div id="familyModal" class="modal">
         <div class="modal-content">
@@ -382,18 +425,16 @@
     </div>
     <!-- end FAMILY MODAL -->
 
-<!-- NÚT SCROLL TO TOP (bị sót khi tách khỏi Tui gốc — gây lỗi addEventListener(null)
-     làm setupEventListeners() dừng giữa chừng, kéo theo initDB() không chạy) -->
+<!-- NÚT SCROLL TO TOP -->
 <button class="scroll-top" id="scrollTopBtn">↑</button>
 
 <!-- ---------------------------------------------------------------------
-     TẠM ẨN: khối Settings + App Info gốc của module Gia đình.
-     Sẽ được BƯỚC 4 (Settings toàn app) tái sử dụng — script.js vẫn cần
-     các id này tồn tại trong DOM để gắn sự kiện, nên giữ nguyên, chỉ ẩn UI.
+     TẠM ẨN: khối Settings gốc của module Gia đình (đã chuyển ra Settings toàn app).
+     script.js vẫn cần các id này tồn tại trong DOM để gắn sự kiện, nên giữ nguyên, chỉ ẩn UI.
      --------------------------------------------------------------------- -->
 <div id="finance-legacy-settings" style="display:none;" aria-hidden="true">
 
-    <!-- TAB SETTINGS -->
+<!-- TAB SETTINGS -->
     <div id="tab-settings" class="tab-content">
         <div class="card">
             <h3>Thay Đổi Giao Diện</h3>
@@ -412,7 +453,6 @@
 
         <div class="card">
             <h3>Dữ liệu & Đồng bộ</h3>
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 12px;">Cập nhật thông tin thành viên gia đình mới nhất.</p>
             <button class="btn" id="btn-sync-data">🔄 Đồng bộ dữ liệu</button>
             <div id="sync-status" style="font-size: 12px; color: #aaa; margin-top: 8px; text-align: center;"></div>
             
@@ -436,12 +476,6 @@
 
 </div>
 <!-- end TẠM ẨN finance-legacy-settings -->
-
-<!-- [HUB] MODAL THÔNG TIN ỨNG DỤNG đã CHUYỂN sang shell (index.html), ngoài mọi
-     .app-module — vì modal cần hiện được kể cả khi đang đứng ở trang Settings
-     (lúc đó module-finance không active/display:none, modal nếu nằm trong đây
-     cũng sẽ bị ẩn theo dù tự set display:flex). ID các phần tử bên trong (app-version,
-     app-build-date...) giữ nguyên nên openAppInfoModal()/updateAppInfo() không cần sửa gì. -->
 
 </div>
 <!-- end MODULE: QUẢN LÍ GIA ĐÌNH -->
@@ -944,41 +978,31 @@
 
 <!-- =========================================================================
      MODULE: SETTINGS (toàn app)
-     Tái sử dụng logic gốc của module Gia đình (theme/sync/reset/app-info) và
-     module Huyền học (bộ màu) qua window.HubModules.* — không viết lại logic.
+     Giao diện dùng CHUNG cho toàn app (1 công tắc Dark/Light + 1 màu chủ đạo),
+     không tách riêng theo từng module nữa. Vẫn tái sử dụng logic gốc của module
+     Gia đình (sync/reset/app-info) qua window.HubModules.* — không viết lại logic đó.
      ========================================================================= -->
 <div id="module-settings" class="app-module">
 <div id="settings-page">
 
-    <!-- a. THAY ĐỔI GIAO DIỆN -->
+    <!-- a. THAY ĐỔI GIAO DIỆN — 1 bộ thiết lập DUY NHẤT cho toàn app -->
     <div class="settings-card">
         <div class="settings-card-title">🎨 Thay đổi giao diện</div>
 
         <div class="settings-row settings-row-primary">
-            <span>🌙 Chế độ tối (áp dụng cho toàn app)</span>
+            <span>🌙 Chế độ tối</span>
             <label class="hub-switch">
                 <input type="checkbox" id="settings-dark-toggle">
                 <span class="hub-slider"></span>
             </label>
         </div>
 
-        <div class="settings-subsection">
-            <div class="settings-subtitle">💰 Quản lí gia đình</div>
-            <div class="settings-row">
-                <span>Màu chủ đạo</span>
-                <select id="settings-finance-color" class="settings-select"></select>
-            </div>
+        <div class="settings-row">
+            <span>Màu chủ đạo</span>
+            <select id="settings-accent-color" class="settings-select"></select>
         </div>
 
-        <div class="settings-subsection">
-            <div class="settings-subtitle">🔮 Huyền học</div>
-            <div class="settings-row">
-                <span>Bộ màu</span>
-                <select id="settings-huyenhoc-theme" class="settings-select"></select>
-            </div>
-        </div>
-
-        <p class="settings-note">🧮 Máy tính lười dùng 1 giao diện cố định, chưa có tùy chỉnh màu.</p>
+        <p class="settings-note">🧮 Máy tính lười dùng 1 giao diện cố định, chưa hỗ trợ tùy chỉnh màu.</p>
     </div>
 
     <!-- b. ĐỒNG BỘ DỮ LIỆU -->
@@ -992,7 +1016,7 @@
     <!-- c. XÓA DỮ LIỆU VÀ ĐẶT LẠI APP -->
     <div class="settings-card">
         <div class="settings-card-title">🗑️ Xóa dữ liệu và Đặt lại App</div>
-        <p class="settings-desc">Xóa toàn bộ dữ liệu cục bộ (thu chi, nhật kí, family, nhắc hẹn, theme đã lưu ở mọi module) và đặt lại app về mặc định. Cần xác thực mật khẩu. Không thể hoàn tác.</p>
+        <p class="settings-desc">Xóa toàn bộ dữ liệu cục bộ (thu chi, nhật kí, family, nhắc hẹn, theme đã lưu) và đặt lại app về mặc định. Cần xác thực mật khẩu. Không thể hoàn tác.</p>
         <button class="hub-btn danger" id="settings-btn-reset">🗑️ Xóa sạch dữ liệu &amp; Đặt lại App</button>
     </div>
 
@@ -1016,9 +1040,7 @@
 
     <!-- ===== MODAL THÔNG TIN ỨNG DỤNG (module Gia đình) =====
          Đặt ở cấp shell, ngoài mọi .app-module, để mở được từ trang Settings
-         dù module Gia đình lúc đó không active/display:none.
-         openAppInfoModal()/closeAppInfoModal()/updateAppInfo() trong finance.js
-         vẫn getElementById các id bên dưới bình thường, không cần đổi gì. -->
+         dù module Gia đình lúc đó không active/display:none. -->
     <div id="appInfoModal" class="hub-modal">
         <div class="hub-modal-content">
             <button class="hub-modal-close" id="btn-close-app-info">&times;</button>

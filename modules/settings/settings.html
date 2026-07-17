@@ -1,40 +1,30 @@
 <!-- =========================================================================
      MODULE: SETTINGS (toàn app)
-     Tái sử dụng logic gốc của module Gia đình (theme/sync/reset/app-info) và
-     module Huyền học (bộ màu) qua window.HubModules.* — không viết lại logic.
+     Giao diện dùng CHUNG cho toàn app (1 công tắc Dark/Light + 1 màu chủ đạo),
+     không tách riêng theo từng module nữa. Vẫn tái sử dụng logic gốc của module
+     Gia đình (sync/reset/app-info) qua window.HubModules.* — không viết lại logic đó.
      ========================================================================= -->
 <div id="module-settings" class="app-module">
 <div id="settings-page">
 
-    <!-- a. THAY ĐỔI GIAO DIỆN -->
+    <!-- a. THAY ĐỔI GIAO DIỆN — 1 bộ thiết lập DUY NHẤT cho toàn app -->
     <div class="settings-card">
         <div class="settings-card-title">🎨 Thay đổi giao diện</div>
 
         <div class="settings-row settings-row-primary">
-            <span>🌙 Chế độ tối (áp dụng cho toàn app)</span>
+            <span>🌙 Chế độ tối</span>
             <label class="hub-switch">
                 <input type="checkbox" id="settings-dark-toggle">
                 <span class="hub-slider"></span>
             </label>
         </div>
 
-        <div class="settings-subsection">
-            <div class="settings-subtitle">💰 Quản lí gia đình</div>
-            <div class="settings-row">
-                <span>Màu chủ đạo</span>
-                <select id="settings-finance-color" class="settings-select"></select>
-            </div>
+        <div class="settings-row">
+            <span>Màu chủ đạo</span>
+            <select id="settings-accent-color" class="settings-select"></select>
         </div>
 
-        <div class="settings-subsection">
-            <div class="settings-subtitle">🔮 Huyền học</div>
-            <div class="settings-row">
-                <span>Bộ màu</span>
-                <select id="settings-huyenhoc-theme" class="settings-select"></select>
-            </div>
-        </div>
-
-        <p class="settings-note">🧮 Máy tính lười dùng 1 giao diện cố định, chưa có tùy chỉnh màu.</p>
+        <p class="settings-note">🧮 Máy tính lười dùng 1 giao diện cố định, chưa hỗ trợ tùy chỉnh màu.</p>
     </div>
 
     <!-- b. ĐỒNG BỘ DỮ LIỆU -->
@@ -48,7 +38,7 @@
     <!-- c. XÓA DỮ LIỆU VÀ ĐẶT LẠI APP -->
     <div class="settings-card">
         <div class="settings-card-title">🗑️ Xóa dữ liệu và Đặt lại App</div>
-        <p class="settings-desc">Xóa toàn bộ dữ liệu cục bộ (thu chi, nhật kí, family, nhắc hẹn, theme đã lưu ở mọi module) và đặt lại app về mặc định. Cần xác thực mật khẩu. Không thể hoàn tác.</p>
+        <p class="settings-desc">Xóa toàn bộ dữ liệu cục bộ (thu chi, nhật kí, family, nhắc hẹn, theme đã lưu) và đặt lại app về mặc định. Cần xác thực mật khẩu. Không thể hoàn tác.</p>
         <button class="hub-btn danger" id="settings-btn-reset">🗑️ Xóa sạch dữ liệu &amp; Đặt lại App</button>
     </div>
 

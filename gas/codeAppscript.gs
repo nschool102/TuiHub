@@ -68,25 +68,75 @@ const SHEETS_CONFIG = {
   REMINDERS: "REMINDERS",
   FAMILY: "FAMILY",
   CONFIG_APP: "CONFIG_APP",
-  DIARY: "DIARY"  // Thêm dòng này
+  DIARY: "DIARY",
+  HEALTH: "HEALTH"  // [HUB] Sheet mới cho Health Check — tự tạo sheet này (cùng tên) nếu chưa có
 };
 
 // =========================================================================
 // HÀM XỬ LÝ NGÀY THÁNG CHO VIỆT NAM (GMT+7)
 // =========================================================================
 
-// [HUB] Trả về Date object đã quy đổi giờ VN (GMT+7), dùng để ghi vào Sheet dưới
-// dạng kiểu Datetime thật (thay vì ép Plain Text như trước) — cell sẽ hiển thị
-// theo định dạng số "dd-mm-yyyy hh:mm" đặt qua setNumberFormat().
+// [HUB] Trả về Date object THẬT (Date value / serial number), dùng để ghi vào Sheet
+// thay cho ép Plain Text — để dùng được trong SUMIFS/COUNTIFS/cộng trừ ngày.
+//
+// QUAN TRỌNG: frontend gửi lên NHIỀU định dạng chuỗi ngày giờ khác nhau tùy chỗ:
+//   - Giao dịch Thu/Chi & Nhắc hẹn: "yyyy-mm-dd hh:mm" hoặc "yyyy-mm-dd" (ISO, JS Date() parse được)
+//   - Nhật kí:  "dd-mm-yyyy hh:mm:ss"   (KHÔNG parse được bằng new Date() trực tiếp)
+//   - Health:   "dd/mm/yyyy hh:mm"     (KHÔNG parse được bằng new Date() trực tiếp)
+// new Date("16-07-2026 13:31:00") / new Date("16/07/2026 13:31") đều trả về Invalid Date,
+// nên phải tự tách ngày/giờ bằng regex theo từng định dạng thay vì phó mặc cho Date() đoán.
+//
+// Các thành phần ngày/giờ tách ra được coi là GIỜ VIỆT NAM (vì frontend đã tự quy đổi trước
+// khi gửi lên), nên dùng new Date(năm, tháng, ngày, giờ, phút, giây) — Date constructor kiểu
+// "component" này tạo giờ theo timezone của chính Apps Script project. Múi giờ project CẦN
+// được đặt là "(GMT+07:00) Bangkok/Hanoi/Jakarta" (File ▸ Project properties ▸ Time zone)
+// để giá trị ghi vào Sheet đúng bằng giờ Việt Nam như đã nhập.
 function toVietnamDateObject(dateInput) {
   if (!dateInput) return null;
-  var d = new Date(dateInput);
-  if (isNaN(d.getTime())) {
-    Logger.log("⚠️ toVietnamDateObject: Invalid date input: " + dateInput);
-    return null;
+
+  if (dateInput instanceof Date) {
+    return isNaN(dateInput.getTime()) ? null : dateInput;
   }
-  var offset = d.getTimezoneOffset();
-  return new Date(d.getTime() + (offset + 420) * 60000);
+
+  var s = String(dateInput).trim();
+  var m;
+
+  // yyyy-mm-dd hh:mm[:ss] hoặc yyyy-mm-ddThh:mm[:ss]
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(:(\d{2}))?/);
+  if (m) {
+    return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[7] || 0));
+  }
+
+  // yyyy-mm-dd (chỉ ngày)
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    return new Date(+m[1], +m[2] - 1, +m[3]);
+  }
+
+  // dd-mm-yyyy hh:mm[:ss] (Nhật kí)
+  m = s.match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})(:(\d{2}))?/);
+  if (m) {
+    return new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +(m[7] || 0));
+  }
+
+  // dd/mm/yyyy hh:mm (Health)
+  m = s.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+  if (m) {
+    return new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], 0);
+  }
+
+  // dd/mm/yyyy hoặc dd-mm-yyyy (chỉ ngày)
+  m = s.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})$/);
+  if (m) {
+    return new Date(+m[3], +m[2] - 1, +m[1]);
+  }
+
+  // Fallback cuối: để JS tự đoán (vd chuỗi ISO có "Z"/offset, hoặc timestamp số)
+  var fallback = new Date(dateInput);
+  if (!isNaN(fallback.getTime())) return fallback;
+
+  Logger.log("⚠️ toVietnamDateObject: Không parse được chuỗi ngày: " + dateInput);
+  return null;
 } // end function toVietnamDateObject
 
 // Format Date thành chuỗi yyyy-mm-dd hh:mm:ss theo GMT+7
@@ -212,6 +262,10 @@ function doPost(e) {
       Logger.log("📝 Action: syncDiary");
       responseData = syncDiaryAction(ss, params);
     }
+    else if (action === "syncHealth") {
+      Logger.log("🏥 Action: syncHealth");
+      responseData = syncHealthAction(ss, params);
+    }
     else {
       Logger.log("❌ Unknown action: " + action);
       responseData = { status: "error", message: "Hành động POST không hợp lệ: " + action };
@@ -254,16 +308,20 @@ function syncDiaryAction(ss, params) {
   entries.forEach(function(entry, index) {
     if (entry.datetime && entry.place) {
       var newRow = sheet.getLastRow() + 1;
-      
-      // Cột A: DATETIME - ép Plain Text để giữ định dạng dd-mm-yyyy HH:mm:ss
-      // [HUB] Ghi kiểu Datetime thật thay vì ép Plain Text
+
+      // Cột A: DATETIME — [HUB] ghi kiểu Datetime thật (Date value) thay vì ép Plain Text
       var diaryDateObj = toVietnamDateObject(entry.datetime);
       sheet.getRange(newRow, 1).setNumberFormat("dd-mm-yyyy hh:mm").setValue(diaryDateObj || entry.datetime || "");
       // Cột B: PLACE
       sheet.getRange(newRow, 2).setValue(entry.place || "");
       // Cột C: DETAIL
       sheet.getRange(newRow, 3).setValue(entry.detail || "");
-      
+      // [HUB] Cột D-G: dữ liệu Health Check đi kèm Nhật kí (nếu người dùng có nhập khi "Lưu Nhật Kí")
+      sheet.getRange(newRow, 4).setValue((entry.weight === null || entry.weight === undefined) ? "" : entry.weight);
+      sheet.getRange(newRow, 5).setValue(entry.bloodPressure || "");
+      sheet.getRange(newRow, 6).setValue(entry.heartRate || "");
+      sheet.getRange(newRow, 7).setValue(entry.dau ? true : false);
+
       count++;
       Logger.log("✅ Đã ghi diary dòng " + newRow + ": " + entry.datetime);
     } else {
@@ -274,6 +332,48 @@ function syncDiaryAction(ss, params) {
   Logger.log("✅ syncDiaryAction: Hoàn thành, đã ghi " + count + " entries");
   return { status: "success", message: "Đã đồng bộ " + count + " nhật kí!", count: count };
 } // end function syncDiaryAction
+
+// [HUB] Đồng bộ Health Check (nút "Lưu Health" riêng, lưu vào IndexedDB store "health"
+// và sync độc lập với Nhật kí) — tự tạo sheet HEALTH nếu spreadsheet chưa có sheet này.
+function syncHealthAction(ss, params) {
+  Logger.log("🏥 syncHealthAction: Bắt đầu");
+
+  var sheet = ss.getSheetByName(SHEETS_CONFIG.HEALTH);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEETS_CONFIG.HEALTH);
+    sheet.getRange(1, 1, 1, 5).setValues([["DATETIME", "WEIGHT", "BLOOD_PRESSURE", "HEART_RATE", "DAU"]]);
+    Logger.log("🆕 Đã tự tạo sheet HEALTH kèm header");
+  }
+
+  var entries = params.data || [];
+  if (!Array.isArray(entries)) {
+    Logger.log("❌ syncHealthAction: Dữ liệu không phải là array");
+    return { status: "error", message: "Dữ liệu không hợp lệ" };
+  }
+
+  var count = 0;
+  entries.forEach(function(entry, index) {
+    if (entry.datetime) {
+      var newRow = sheet.getLastRow() + 1;
+
+      // Cột A: DATETIME — ghi kiểu Datetime thật (Date value), không phải Plain Text
+      var healthDateObj = toVietnamDateObject(entry.datetime);
+      sheet.getRange(newRow, 1).setNumberFormat("dd-mm-yyyy hh:mm").setValue(healthDateObj || entry.datetime || "");
+      sheet.getRange(newRow, 2).setValue((entry.weight === null || entry.weight === undefined || entry.weight === "") ? "" : entry.weight);
+      sheet.getRange(newRow, 3).setValue(entry.bloodPressure || "");
+      sheet.getRange(newRow, 4).setValue(entry.heartRate || "");
+      sheet.getRange(newRow, 5).setValue(entry.dau ? true : false);
+
+      count++;
+      Logger.log("✅ Đã ghi health dòng " + newRow + ": " + entry.datetime);
+    } else {
+      Logger.log("⚠️ Bỏ qua health #" + index + " do thiếu datetime");
+    }
+  });
+
+  Logger.log("✅ syncHealthAction: Hoàn thành, đã ghi " + count + " entries");
+  return { status: "success", message: "Đã đồng bộ " + count + " health check!", count: count };
+} // end function syncHealthAction
 
 // Thêm hàm getDiaryDataAction
 function getDiaryDataAction(ss) {

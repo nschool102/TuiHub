@@ -1224,9 +1224,14 @@ function initThemeSelector() {
 
 // 2. Hàm Apply - Chỉ chạy khi nhấn nút
 function applyTheme() {
-    const themeKey = document.getElementById('theme-selector').value;
-    const mode = document.getElementById('mode-selector').value;
-    
+    let themeKey = document.getElementById('theme-selector').value;
+    let mode = document.getElementById('mode-selector').value;
+
+    // [HUB] Fallback an toàn: nếu 2 select này chưa có option (chưa initThemeSelector())
+    // hoặc giá trị không hợp lệ, dùng theme/mode mặc định thay vì crash.
+    if (!themes[themeKey]) themeKey = Object.keys(themes)[0];
+    if (mode !== 'dark' && mode !== 'light') mode = 'dark';
+
     const colors = themes[themeKey][mode]; // Lấy màu dựa trên theme + mode
     
     const root = document.getElementById('module-huyenhoc');
@@ -1243,6 +1248,24 @@ function applyTheme() {
     // Lưu lại lựa chọn
     localStorage.setItem('user-theme', themeKey);
     localStorage.setItem('user-mode', mode);
+}
+
+// [HUB] Giao diện đã hợp nhất: bg/panel dùng cố định 1 bộ màu nền (mặc định 'xanhla'),
+// chỉ có Dark/Light và màu accent là đổi theo lựa chọn CHUNG của Settings toàn app
+// (thay vì mỗi module tự có bộ màu riêng). Settings gọi hàm này thay cho applyTheme().
+const UNIFIED_BASE_THEME_KEY = 'xanhla';
+function applyUnifiedTheme(mode, accentHex) {
+    if (mode !== 'dark' && mode !== 'light') mode = 'dark';
+    const base = themes[UNIFIED_BASE_THEME_KEY] ? themes[UNIFIED_BASE_THEME_KEY][mode] : themes[Object.keys(themes)[0]][mode];
+
+    const root = document.getElementById('module-huyenhoc');
+    root.style.setProperty('--bg-color', base.bg);
+    root.style.setProperty('--panel-color', base.panel);
+    root.style.setProperty('--accent-color', accentHex || base.accent);
+    root.style.setProperty('--text-main', mode === 'dark' ? '#e0e0e0' : '#1a1a1a');
+
+    localStorage.setItem('user-mode', mode);
+    if (accentHex) localStorage.setItem('unified-accent', accentHex);
 }
 
 
@@ -1554,16 +1577,13 @@ function huyenhocModuleInit() {
     setupTabs();         // vô hại: không còn .tab trong DOM (đã thay bằng hub-submenu), forEach rỗng
     initThemeSelector();
 
-    const savedTheme = localStorage.getItem('user-theme') || 'xanhla';
-    const savedMode = localStorage.getItem('user-mode') || 'dark';
-
-    const themeEl = document.getElementById('theme-selector');
-    const modeEl = document.getElementById('mode-selector');
-
-    if (themeEl) themeEl.value = savedTheme;
-    if (modeEl) modeEl.value = savedMode;
-
-    applyTheme(); // shell sẽ tự gọi switchTab('maihoa') ngay sau init(), không cần gọi lại ở đây
+    // [HUB] Giao diện đã hợp nhất toàn app — áp lại đúng Dark/Light + màu accent chung
+    // (do Settings toàn app quản lý) thay vì dùng theme/mode riêng của module này.
+    const savedMode = localStorage.getItem('darkMode') !== null
+        ? (localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light')
+        : (localStorage.getItem('user-mode') || 'dark');
+    const savedAccent = localStorage.getItem('unified-accent') || localStorage.getItem('themeColor');
+    applyUnifiedTheme(savedMode, savedAccent);
 }
 
 // Hàm phụ trợ để gán sự kiện tab
@@ -1577,10 +1597,16 @@ function setupTabs() {
 
 
 // [HUB] Expose API cho shell.js gọi
+// [HUB] Đổ sẵn danh sách theme vào #theme-selector ngay khi script load, không đợi
+// huyenhocModuleInit() (lazy) — để Settings gọi applyTheme() được ngay cả khi
+// người dùng chưa từng mở tab Huyền học lần nào.
+initThemeSelector();
+
 window.HubModules.huyenhoc = {
     init: huyenhocModuleInit,
     switchTab: switchTab,
     applyTheme: applyTheme,
+    applyUnifiedTheme: applyUnifiedTheme,
     themes: themes
 };
 
