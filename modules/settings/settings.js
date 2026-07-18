@@ -28,8 +28,8 @@ function getSavedDark() {
     return saved !== null ? saved === 'true' : true;
 }
 
-// [HUB] Áp dụng đồng thời cho cả module Gia đình lẫn Huyền học — đây là điểm
-// DUY NHẤT điều khiển giao diện toàn app, thay cho 2 hệ thống theme riêng biệt trước đây.
+// [HUB] Áp dụng đồng thời cho module Gia đình, Huyền học, VÀ khung shell (navbar, topbar,
+// trang Settings, modal) — đây là điểm DUY NHẤT điều khiển giao diện toàn app.
 function applyUnifiedAppearance(isDark, accentHex) {
     const mode = isDark ? 'dark' : 'light';
 
@@ -40,6 +40,11 @@ function applyUnifiedAppearance(isDark, accentHex) {
     if (window.HubModules.huyenhoc) {
         window.HubModules.huyenhoc.applyUnifiedTheme(mode, accentHex);
     }
+
+    // Khung shell (navbar cấp 1/2, topbar, trang Settings, modal Thông tin ứng dụng)
+    // trước đây luôn cố định tối — giờ đổi theo cùng lựa chọn Dark/Light + màu chủ đạo.
+    document.body.setAttribute('data-theme', mode);
+    document.documentElement.style.setProperty('--hub-accent', accentHex);
 
     localStorage.setItem('unified-accent', accentHex);
 }

@@ -11,11 +11,27 @@
     --hub-border: #2c3136;
     --hub-text: #eef0f2;
     --hub-text-dim: #9aa2ab;
-    --hub-accent: #ffc107;      /* kế thừa màu vàng chủ đạo từ module Tui */
+    --hub-accent: #ffc107;      /* [HUB] cập nhật động qua JS khi user đổi màu chủ đạo ở Settings */
     --hub-accent-text: #171a1c;
     --hub-radius: 14px;
     --hub-safe-top: env(safe-area-inset-top, 0px);
     --hub-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* [HUB] Light mode cho khung shell (navbar, topbar, trang Settings, modal) — chuyển qua
+   data-theme="light" trên <body>, đặt bởi settings.js khi user tắt Chế độ tối. Đặt trên
+   body (không phải #hub-shell) để CSS variable cascade đúng xuống html/body/#hub-shell
+   (biến CSS chỉ chảy từ cha xuống con, #hub-shell là con của body nên không tự ngược lên
+   được). Trước đây khung shell luôn cố định tối, khiến bật/tắt Dark mode không có tác dụng
+   gì lên navbar/trang Settings (chỉ đổi được nội dung bên trong module Gia đình/Huyền học).
+*/
+body[data-theme="light"] {
+    --hub-bg: #f3f4f6;
+    --hub-surface: #ffffff;
+    --hub-surface-2: #eef0f3;
+    --hub-border: #dde1e6;
+    --hub-text: #191c1f;
+    --hub-text-dim: #6b7280;
 }
 
 * { box-sizing: border-box; }

@@ -145,6 +145,14 @@ function hubOpenSub(moduleKey, subKey) {
     }
 } // end function hubOpenSub
 
+function hubApplySavedTheme() {
+    const savedDark = localStorage.getItem('darkMode');
+    const isDark = savedDark !== null ? savedDark === 'true' : true;
+    const accent = localStorage.getItem('unified-accent') || localStorage.getItem('themeColor') || '#ffc107';
+    document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.style.setProperty('--hub-accent', accent);
+} // end function hubApplySavedTheme
+
 function hubRegisterServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -155,6 +163,7 @@ function hubRegisterServiceWorker() {
 } // end function hubRegisterServiceWorker
 
 document.addEventListener('DOMContentLoaded', () => {
+    hubApplySavedTheme();
     hubRenderBottomNav();
     hubRegisterServiceWorker();
     hubOpenModule('finance'); // module mặc định khi mở app

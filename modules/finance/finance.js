@@ -586,6 +586,9 @@ function switchTab(tabName) {
     if (tabName === 'chi' || tabName === 'thongke') {
         renderChartsAndStats();
     }
+    if (tabName === 'thongke') {
+        runThongKeTheoKy(); // [HUB] Section 5: render lại với bộ lọc hiện tại mỗi lần mở tab
+    }
     if (tabName === 'family') {
         checkFamilyTabAccess();
     }
@@ -987,6 +990,135 @@ function renderPieChart(canvasId, labels, dataset, customColors = null) {
     });
 } // end function renderPieChart
 
+// [HUB] Biến thể Donut của renderPieChart (dùng cho Section 5: Thống kê theo kỳ)
+function renderDoughnutChart(canvasId, labels, dataset, customColors = null) {
+    if (charts[canvasId]) {
+        charts[canvasId].destroy();
+        delete charts[canvasId];
+    }
+
+    const canvasEl = document.getElementById(canvasId);
+    if (!canvasEl) return;
+
+    const ctx = canvasEl.getContext('2d');
+    let total = dataset.reduce((a, b) => a + Math.abs(b), 0);
+    let defaultColors = ['#4CAF50', '#F44336', '#FF9800', '#2196F3', '#9C27B0', '#E91E63'];
+    let colors = customColors || defaultColors;
+
+    charts[canvasId] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: dataset,
+                backgroundColor: colors
+            }]
+        },
+        plugins: [ChartDataLabels],
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '55%',
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: { size: 13, weight: 'bold' },
+                        padding: 12,
+                        generateLabels: function(chart) {
+                            const original = Chart.overrides.pie.plugins.legend.labels.generateLabels(chart);
+                            const bgColors = chart.data.datasets[0].backgroundColor;
+                            original.forEach((item, i) => {
+                                item.fontColor = getReadableLegendColor(bgColors[i]);
+                                item.strokeStyle = bgColors[i];
+                            });
+                            return original;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: function(ctx) {
+                        let c = ctx.dataset.backgroundColor[ctx.dataIndex];
+                        return (c === '#FFEB3B' || c === '#8BC34A') ? '#111111' : '#ffffff';
+                    },
+                    font: { weight: 'bold', size: 12 },
+                    anchor: 'center',
+                    align: 'center',
+                    formatter: function(value) {
+                        if (total > 0 && (Math.abs(value) / total * 100) > 3) {
+                            return (Math.abs(value) / total * 100).toFixed(1) + "%";
+                        }
+                        return '';
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.label + ": " + Math.abs(ctx.raw).toLocaleString() +
+                                   " (" + (total > 0 ? (Math.abs(ctx.raw) / total * 100).toFixed(1) + "%" : "0%") + ")";
+                        }
+                    }
+                }
+            }
+        }
+    });
+} // end function renderDoughnutChart
+
+// [HUB] Bar chart đơn giản nhận thẳng labels/dataset (dùng cho Section 5: Các khoản Chi hàng tháng)
+function renderSimpleBarChart(canvasId, labels, dataset) {
+    if (charts[canvasId]) {
+        charts[canvasId].destroy();
+        delete charts[canvasId];
+    }
+
+    const canvasEl = document.getElementById(canvasId);
+    if (!canvasEl) return;
+
+    const ctx = canvasEl.getContext('2d');
+    const colors = ['#FF9800', '#2196F3', '#4CAF50', '#E91E63'];
+
+    charts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Số tiền',
+                data: dataset,
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        plugins: [ChartDataLabels],
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    color: '#ffffff',
+                    font: { weight: 'bold', size: 10 },
+                    anchor: 'end',
+                    align: 'end',
+                    formatter: function(value) {
+                        return value > 0 ? formatVND(value) : '';
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return formatVND(ctx.raw); }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+                x: { ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+} // end function renderSimpleBarChart
+
 function getReadableLegendColor(hexColor) {
     return hexColor || (document.getElementById('module-finance').getAttribute('data-theme') === 'dark' ? '#ffffff' : '#333333');
 } // end function getReadableLegendColor
@@ -1101,6 +1233,164 @@ function renderChartsAndStats() {
         updateSummaryTotals();
     });
 } // end function renderChartsAndStats
+
+// =========================================================================
+// [HUB] SECTION 5: THỐNG KÊ THEO KỲ (chọn Tháng/Năm tự do) — theo yêu cầu mới
+// =========================================================================
+
+// Gắn 1 lần duy nhất lúc module khởi tạo: đổ options Năm + gắn nút submit.
+function initThongKeFilters() {
+    const namSelect = document.getElementById('tk-nam');
+    const thangSelect = document.getElementById('tk-thang');
+    if (!namSelect || !thangSelect) return;
+
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear - 2, currentYear - 1, currentYear];
+    namSelect.innerHTML = years.map(y =>
+        `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`
+    ).join('');
+
+    const btn = document.getElementById('tk-submit-btn');
+    if (btn) btn.addEventListener('click', runThongKeTheoKy);
+} // end function initThongKeFilters
+
+// Điện/Nước là khoản trả sau: tiền tháng N phát sinh và được GHI CHÚ vào tháng N+1,
+// nên dò theo Ghi chú (dạng "T{tháng}.{năm}", ví dụ "T6.2026") thay vì theo Timestamp.
+function noteMatchesBillingPeriod(note, month, year) {
+    if (!note) return false;
+    if (month === 0) {
+        // Cả năm: khớp bất kỳ nhãn T1..T12 của năm được chọn
+        const re = new RegExp('T(1[0-2]|[1-9])\\.' + year + '(?!\\d)');
+        return re.test(note);
+    }
+    const target = 'T' + month + '.' + year;
+    return note.indexOf(target) !== -1;
+} // end function noteMatchesBillingPeriod
+
+// Các khoản còn lại dò theo thời gian phát sinh thật (cột Timestamp, dạng "yyyy-mm-dd hh:mm").
+function timestampInPeriod(timestamp, month, year) {
+    if (!timestamp || timestamp.length < 7) return false;
+    const y = parseInt(timestamp.substring(0, 4), 10);
+    const m = parseInt(timestamp.substring(5, 7), 10);
+    if (y !== year) return false;
+    if (month === 0) return true; // thangThongKe = None -> cả năm
+    return m === month;
+} // end function timestampInPeriod
+
+function runThongKeTheoKy() {
+    const thangEl = document.getElementById('tk-thang');
+    const namEl = document.getElementById('tk-nam');
+    if (!thangEl || !namEl || !namEl.value) return;
+
+    const month = parseInt(thangEl.value, 10) || 0; // 0 = None (cả năm)
+    const year = parseInt(namEl.value, 10);
+
+    const labelEl = document.getElementById('tk-period-label');
+    if (labelEl) {
+        labelEl.textContent = month === 0 ? `Đang xem: Cả năm ${year}` : `Đang xem: Tháng ${month}/${year}`;
+    }
+
+    getAllTransactions(data => {
+        // ---- b.i Donut "Tỉ lệ Đóng góp": CON CỢP vs Khác (trong các khoản Thu) ----
+        // ---- b.ii Donut "Tỉ lệ Thu Chi": Tổng Thu vs Tổng Chi ----
+        let sumTiger = 0, sumOther = 0, totalThu = 0, totalChi = 0;
+        // ---- b.iii Bar "Các khoản Chi hàng tháng" ----
+        let sumDien = 0, sumNuoc = 0, sumAnSang = 0, sumDiCho = 0;
+
+        data.forEach(t => {
+            const amt = t.amount;
+            const inPeriodByTime = timestampInPeriod(t.timestamp, month, year);
+
+            if (amt > 0 && inPeriodByTime) {
+                totalThu += amt;
+                if (t.type === 'CON CỢP') sumTiger += amt; else sumOther += amt;
+            } else if (amt < 0 && inPeriodByTime) {
+                totalChi += Math.abs(amt);
+                if (t.subtype === 'Ăn sáng') sumAnSang += Math.abs(amt);
+                if (t.subtype === 'Đi chợ, Siêu thị') sumDiCho += Math.abs(amt);
+            }
+
+            // Điện/Nước: dò theo Ghi chú, KHÔNG theo Timestamp (khoản trả sau)
+            if (amt < 0 && t.subtype === 'Điện' && noteMatchesBillingPeriod(t.note, month, year)) {
+                sumDien += Math.abs(amt);
+            }
+            if (amt < 0 && t.subtype === 'Nước' && noteMatchesBillingPeriod(t.note, month, year)) {
+                sumNuoc += Math.abs(amt);
+            }
+        });
+
+        document.getElementById('tk-contrib-other').textContent = formatVND(sumOther);
+        document.getElementById('tk-contrib-tiger').textContent = formatVND(sumTiger);
+        renderDoughnutChart('tk-chart-contribution', ['Khác', 'CON CỢP'], [sumOther, sumTiger], ['#8BC34A', '#E91E63']);
+
+        document.getElementById('tk-thuchi-thu').textContent = formatVND(totalThu);
+        document.getElementById('tk-thuchi-chi').textContent = formatVND(totalChi);
+        renderDoughnutChart('tk-chart-thuchi', ['Tổng Thu', 'Tổng Chi'], [totalThu, totalChi], ['#4CAF50', '#F44336']);
+
+        renderSimpleBarChart('tk-chart-monthly',
+            ['Điện', 'Nước', 'Tổng Ăn sáng', 'Tổng Đi chợ, Siêu thị'],
+            [sumDien, sumNuoc, sumAnSang, sumDiCho]);
+
+        // ---- c. So sánh Tháng trước vs Tháng này (cảnh báo > 30%) ----
+        renderThongKeComparison(data, month, year);
+    });
+} // end function runThongKeTheoKy
+
+function renderThongKeComparison(data, month, year) {
+    const container = document.getElementById('tk-comparison-results');
+    if (!container) return;
+
+    if (month === 0) {
+        container.innerHTML = '<p style="opacity:0.7; font-size:12.5px;">Chọn 1 tháng cụ thể (khác "None") để xem so sánh với tháng trước.</p>';
+        return;
+    }
+
+    let prevMonth = month - 1;
+    let prevYear = year;
+    if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
+
+    // 5 hạng mục theo đúng yêu cầu — "Mua sắm & Cá nhân" là cả 1 Type (tổng mọi subtype con).
+    const categories = [
+        { label: 'Điện', match: t => t.subtype === 'Điện', byNote: true },
+        { label: 'Nước', match: t => t.subtype === 'Nước', byNote: true },
+        { label: 'Ăn sáng', match: t => t.subtype === 'Ăn sáng', byNote: false },
+        { label: 'Đi chợ, Siêu thị', match: t => t.subtype === 'Đi chợ, Siêu thị', byNote: false },
+        { label: 'Mua sắm & Cá nhân', match: t => t.type === 'Mua sắm & Cá nhân', byNote: false }
+    ];
+
+    let rowsHtml = '';
+    let hasAlert = false;
+
+    categories.forEach(cat => {
+        let curSum = 0, prevSum = 0;
+        data.forEach(t => {
+            if (t.amount >= 0 || !cat.match(t)) return;
+            const abs = Math.abs(t.amount);
+            if (cat.byNote) {
+                if (noteMatchesBillingPeriod(t.note, month, year)) curSum += abs;
+                if (noteMatchesBillingPeriod(t.note, prevMonth, prevYear)) prevSum += abs;
+            } else {
+                if (timestampInPeriod(t.timestamp, month, year)) curSum += abs;
+                if (timestampInPeriod(t.timestamp, prevMonth, prevYear)) prevSum += abs;
+            }
+        });
+
+        const pctChange = prevSum > 0 ? ((curSum - prevSum) / prevSum * 100) : (curSum > 0 ? 100 : 0);
+        const isOver30 = prevSum > 0 && pctChange > 30;
+        if (isOver30) hasAlert = true;
+
+        rowsHtml += `<div class="stat-row"${isOver30 ? ' style="color:var(--danger-color);font-weight:bold;"' : ''}>
+            <span>${cat.label}${isOver30 ? ' ⚠️' : ''}</span>
+            <strong>${formatVND(curSum)} <span style="font-size:11px; font-weight:normal; opacity:0.7;">(tháng trước: ${formatVND(prevSum)}${prevSum > 0 ? ', ' + (pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '%' : ''})</span></strong>
+        </div>`;
+    });
+
+    const alertHtml = hasAlert
+        ? '<div class="alert-box" style="margin-bottom:10px;">⚠️ Có hạng mục chi vượt 30% so với tháng trước!</div>'
+        : '<p style="color:green; font-size:12.5px; margin-bottom:10px;">An toàn! Không có hạng mục nào vượt 30% so với tháng trước.</p>';
+
+    container.innerHTML = alertHtml + rowsHtml;
+} // end function renderThongKeComparison
 
 function renderTopExpenses() {
     const periodSelect = document.getElementById("chi-top-period");
@@ -3055,6 +3345,7 @@ function fallbackLoadSettings() {
 function financeModuleInit() {
     setupEventListeners();
     initDB();
+    initThongKeFilters(); // [HUB] Section 5: gắn 1 lần duy nhất, không phụ thuộc IndexedDB
 }
 
 window.addEventListener('online', () => {

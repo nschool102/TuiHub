@@ -27,7 +27,7 @@
 #module-calculator .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 #module-calculator .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--safe-bottom) + 16px); }
 #module-calculator .panel { display: none; padding: 16px; }
-#module-calculator .panel.active { display: block; }
+#module-calculator .panel.active { display: block; max-width: 600px; margin: 0 auto; }
 #module-calculator .card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
 #module-calculator .card-title { font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 #module-calculator .field { margin-bottom: 12px; }
