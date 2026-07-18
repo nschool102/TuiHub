@@ -104,7 +104,10 @@
 
     <!-- TAB TAROT -->
         <div class="panel" id="tarot-container">
-            <div class="section-box"><h3>🔮 Tarot</h3><p>Tính năng đang phát triển...</p></div>
+            <div class="section-box" id="tarot-draw-box">
+                <h3>🔮 Tarot</h3>
+                <p style="opacity:0.7; font-size:13px;">Đang rút bài...</p>
+            </div>
         </div>
     <!-- end of TAB TAROT -->
 
@@ -112,14 +115,10 @@
     <!-- TAB DECISION -->
         <div class="panel" id="decision-container">
             <div style="display:flex; flex-direction:column; align-items:center; gap: 25px;" class="section-box">
-                <button id="btn-draw" class="submit-btn">🎲 Draw Decision</button>
-                
                 <div id="decision-result">
-                    <h1 id="res-detail">Nhấn nút để lấy quyết định...</h1>
+                    <h1 id="res-detail">Đang lấy quyết định...</h1>
                 </div>
-    
             </div>
-            
         </div>
     <!-- end of TAB DECISION -->
 

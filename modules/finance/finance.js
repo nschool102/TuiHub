@@ -489,7 +489,7 @@ function setupEventListeners() {
     document.getElementById("thu-amount").addEventListener("input", (e) => formatCurrency(e.target));
 
     document.getElementById("chi-top-period").addEventListener("change", () => renderTopExpenses());
-    document.getElementById("sec4-period").addEventListener("change", () => renderSection4());
+    // [HUB] "sec4-period" đã bị xóa cùng Section 4 (gộp vào Section 5) — gỡ listener tương ứng.
 
     document.getElementById("rem-frequency").addEventListener("change", toggleCustomReminderFields);
 
@@ -1065,10 +1065,41 @@ function renderDoughnutChart(canvasId, labels, dataset, customColors = null) {
     });
 } // end function renderDoughnutChart
 
-// [HUB] Bar chart đơn giản nhận thẳng labels/dataset (dùng cho Section 5: Các khoản Chi hàng tháng)
-// Số tiền hiển thị NGAY DƯỚI tên khoản chi trên trục X (dạng 2 dòng), không ghi nổi phía
-// trên cột nữa vì cột cao dễ bị cắt chữ ở mép trên canvas.
-function renderSimpleBarChart(canvasId, labels, dataset) {
+// [HUB] Biểu đồ "Các khoản Chi hàng tháng" — xu hướng CẢ NĂM (12 tháng), 4 series màu
+// Điện/Nước/Ăn sáng/Đi chợ Siêu thị nhóm cột cạnh nhau theo từng tháng (đúng theo ảnh mẫu).
+// Luôn vẽ theo namThongKe đang chọn, không phụ thuộc thangThongKe (vì đây là view cả năm).
+function computeMonthlyExpenseSeries(data, year) {
+    const dien = new Array(12).fill(0);
+    const nuoc = new Array(12).fill(0);
+    const anSang = new Array(12).fill(0);
+    const dicho = new Array(12).fill(0);
+
+    data.forEach(t => {
+        if (t.amount >= 0) return;
+        const abs = Math.abs(t.amount);
+
+        // Điện/Nước: dò theo Ghi chú "T{m}.{year}" (khoản trả sau)
+        if (t.subtype === 'Điện' || t.subtype === 'Nước') {
+            const m = extractBillingMonthFromNote(t.note, year);
+            if (m) {
+                if (t.subtype === 'Điện') dien[m - 1] += abs; else nuoc[m - 1] += abs;
+            }
+            return;
+        }
+
+        // Ăn sáng / Đi chợ Siêu thị: dò theo Timestamp phát sinh thật
+        if (!t.timestamp || t.timestamp.length < 7) return;
+        const ty = parseInt(t.timestamp.substring(0, 4), 10);
+        const tm = parseInt(t.timestamp.substring(5, 7), 10);
+        if (ty !== year) return;
+        if (t.subtype === 'Ăn sáng') anSang[tm - 1] += abs;
+        if (t.subtype === 'Đi chợ, Siêu thị') dicho[tm - 1] += abs;
+    });
+
+    return { dien, nuoc, anSang, dicho };
+} // end function computeMonthlyExpenseSeries
+
+function renderMonthlyExpenseTrendChart(canvasId, year, series) {
     if (charts[canvasId]) {
         charts[canvasId].destroy();
         delete charts[canvasId];
@@ -1078,40 +1109,41 @@ function renderSimpleBarChart(canvasId, labels, dataset) {
     if (!canvasEl) return;
 
     const ctx = canvasEl.getContext('2d');
-    const colors = ['#FF9800', '#2196F3', '#4CAF50', '#E91E63'];
-    // Mỗi tick trục X là 1 mảng 2 dòng: [Tên khoản chi, Số tiền] -> Chart.js tự xuống dòng
-    const twoLineLabels = labels.map((lbl, i) => [lbl, formatVND(dataset[i])]);
+    const labels = Array.from({ length: 12 }, (_, i) => (i + 1) + '/' + year);
 
     charts[canvasId] = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: twoLineLabels,
-            datasets: [{
-                label: 'Số tiền',
-                data: dataset,
-                backgroundColor: colors,
-                borderWidth: 0,
-                borderRadius: 6
-            }]
+            labels: labels,
+            datasets: [
+                { label: 'Điện', data: series.dien, backgroundColor: '#4285F4', borderRadius: 3 },
+                { label: 'Nước', data: series.nuoc, backgroundColor: '#EA4335', borderRadius: 3 },
+                { label: 'Ăn sáng', data: series.anSang, backgroundColor: '#FBBC04', borderRadius: 3 },
+                { label: 'Đi chợ, Siêu thị', data: series.dicho, backgroundColor: '#34A853', borderRadius: 3 }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { font: { size: 11 }, boxWidth: 12, padding: 10 }
+                },
                 tooltip: {
                     callbacks: {
-                        label: function(ctx) { return formatVND(ctx.raw); }
+                        label: function(ctx) { return ctx.dataset.label + ': ' + formatVND(ctx.raw); }
                     }
                 }
             },
             scales: {
-                y: { beginAtZero: true, ticks: { font: { size: 10 } } },
-                x: { ticks: { font: { size: 10.5, weight: 'bold' } } }
+                y: { beginAtZero: true, ticks: { font: { size: 9 } } },
+                x: { ticks: { font: { size: 9 } } }
             }
         }
     });
-} // end function renderSimpleBarChart
+} // end function renderMonthlyExpenseTrendChart
 
 function getReadableLegendColor(hexColor) {
     return hexColor || (document.getElementById('module-finance').getAttribute('data-theme') === 'dark' ? '#ffffff' : '#333333');
@@ -1119,16 +1151,7 @@ function getReadableLegendColor(hexColor) {
 
 function renderChartsAndStats() {
     getAllTransactions(data => {
-        let totalThu = 0, totalChi = 0, sum_Tiger = 0, sum_Mine = 0;
-        let catCurrentMonth = { "Tổng": 0, "Ăn uống": 0, "Đồ chơi": 0, "Mỹ phẩm": 0, "Quần áo": 0 };
-        let catPrevMonth = { "Tổng": 0, "Ăn uống": 0, "Đồ chơi": 0, "Mỹ phẩm": 0, "Quần áo": 0 };
-
-        const now = new Date();
-        const cM = now.getMonth();
-        const cY = now.getFullYear();
-        let pM = cM - 1;
-        let pY = cY;
-        if (pM < 0) { pM = 11; pY--; }
+        let totalThu = 0, totalChi = 0;
 
         let sortedData = [...data].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         let expList = sortedData.filter(t => t.amount < 0).slice(0, 20);
@@ -1163,67 +1186,20 @@ function renderChartsAndStats() {
         }
 
         data.forEach(t => {
-            const tDate = new Date(t.timestamp);
             const amt = t.amount;
-
             if (amt > 0) {
                 totalThu += amt;
-                if (t.type === "CON CỢP") sum_Tiger += amt;
-                if (t.type === "Lương" || t.type === "Thưởng") sum_Mine += amt;
             } else {
                 totalChi += Math.abs(amt);
-                let absAmt = Math.abs(amt);
-
-                if (tDate.getFullYear() === cY && tDate.getMonth() === cM) {
-                    catCurrentMonth["Tổng"] += absAmt;
-                    if (t.subtype === "Đi chợ, siêu thị" || t.type === "Giải trí") {
-                        catCurrentMonth["Ăn uống"] += absAmt;
-                    }
-                    if (t.subtype === "Đồ chơi") catCurrentMonth["Đồ chơi"] += absAmt;
-                    if (t.subtype === "Mỹ phẩm") catCurrentMonth["Mỹ phẩm"] += absAmt;
-                    if (t.subtype === "Quần áo") catCurrentMonth["Quần áo"] += absAmt;
-                } else if (tDate.getFullYear() === pY && tDate.getMonth() === pM) {
-                    catPrevMonth["Tổng"] += absAmt;
-                    if (t.subtype === "Đi chợ, siêu thị" || t.type === "Giải trí") {
-                        catPrevMonth["Ăn uống"] += absAmt;
-                    }
-                    if (t.subtype === "Đồ chơi") catPrevMonth["Đồ chơi"] += absAmt;
-                    if (t.subtype === "Mỹ phẩm") catPrevMonth["Mỹ phẩm"] += absAmt;
-                    if (t.subtype === "Quần áo") catPrevMonth["Quần áo"] += absAmt;
-                }
             }
         });
 
-        const alertDiv = document.getElementById("section1-alerts");
-        if (alertDiv) {
-            alertDiv.innerHTML = "";
-            let hasAlert = false;
-            Object.keys(catCurrentMonth).forEach(cat => {
-                let cur = catCurrentMonth[cat];
-                let prev = catPrevMonth[cat];
-                if (prev > 0 && cur > prev) {
-                    hasAlert = true;
-                    alertDiv.innerHTML += `<div class="alert-box">Hạng mục <strong>${cat}</strong> chi vượt <strong>${((cur - prev) / prev * 100).toFixed(1)}%</strong> so với tháng trước!</div>`;
-                }
-            });
-            if (!hasAlert) {
-                alertDiv.innerHTML = "<p style='color:green;'>An toàn! Không có hạng mục nào chi vượt tháng trước.</p>";
-            }
-        }
-
-        document.getElementById("sec2-thu").textContent = formatVND(totalThu);
-        document.getElementById("sec2-chi").textContent = formatVND(totalChi);
-        document.getElementById("sec2-remain").textContent = formatVND(totalThu - totalChi);
-        renderPieChart('chart-sec2-pie', ['Tổng Thu', 'Tổng Chi'], [totalThu, totalChi]);
-
-        document.getElementById("sec3-Mine").textContent = formatVND(sum_Mine);
-        document.getElementById("sec3-Tiger").textContent = formatVND(sum_Tiger);
-        renderPieChart('chart-sec3-pie', ['MÌNH', 'CON CỢP'], [sum_Mine, sum_Tiger], ['#8BC34A', '#E91E63']);
-
-        renderSection4(data);
+        // [HUB] Section 1/2/3/4 (cảnh báo cũ, Tổng quan Thu-Chi, Tỉ lệ MÌNH/CON CỢP, Báo cáo
+        // định kỳ) đã bị loại bỏ khỏi tab Thống kê — thay bằng Section 5 (bên dưới). Chỉ giữ
+        // lại phần chart-chi-overview vì đó là widget riêng của TAB CHI, không thuộc Thống kê.
         renderPieChart('chart-chi-overview', ['Tổng Thu', 'Tổng Chi'], [totalThu, totalChi]);
         renderTopExpenses();
-        
+
         updateSummaryTotals();
     });
 } // end function renderChartsAndStats
@@ -1233,16 +1209,22 @@ function renderChartsAndStats() {
 // =========================================================================
 
 // Gắn 1 lần duy nhất lúc module khởi tạo: đổ options Năm + gắn nút submit.
+// [HUB] Mặc định chọn THÁNG HIỆN TẠI (không phải "None") để mở tab là thấy ngay
+// so sánh tháng này với tháng trước.
 function initThongKeFilters() {
     const namSelect = document.getElementById('tk-nam');
     const thangSelect = document.getElementById('tk-thang');
     if (!namSelect || !thangSelect) return;
 
-    const currentYear = new Date().getFullYear();
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
     const years = [currentYear - 2, currentYear - 1, currentYear];
     namSelect.innerHTML = years.map(y =>
         `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`
     ).join('');
+    thangSelect.value = String(currentMonth);
 
     const btn = document.getElementById('tk-submit-btn');
     if (btn) btn.addEventListener('click', runThongKeTheoKy);
@@ -1260,6 +1242,15 @@ function noteMatchesBillingPeriod(note, month, year) {
     const target = 'T' + month + '.' + year;
     return note.indexOf(target) !== -1;
 } // end function noteMatchesBillingPeriod
+
+// Trích tháng ghi trong Ghi chú (dạng "T{m}.{year}") của 1 năm cụ thể — dùng để dựng biểu đồ
+// xu hướng cả năm cho Điện/Nước (mỗi giao dịch chỉ khớp đúng 1 tháng duy nhất trong năm đó).
+function extractBillingMonthFromNote(note, year) {
+    if (!note) return null;
+    const re = new RegExp('T(1[0-2]|[1-9])\\.' + year + '(?!\\d)');
+    const m = note.match(re);
+    return m ? parseInt(m[1], 10) : null;
+} // end function extractBillingMonthFromNote
 
 // Các khoản còn lại dò theo thời gian phát sinh thật (cột Timestamp, dạng "yyyy-mm-dd hh:mm").
 function timestampInPeriod(timestamp, month, year) {
@@ -1288,8 +1279,6 @@ function runThongKeTheoKy() {
         // ---- b.i Donut "Tỉ lệ Đóng góp": CON CỢP vs Khác (trong các khoản Thu) ----
         // ---- b.ii Donut "Tỉ lệ Thu Chi": Tổng Thu vs Tổng Chi ----
         let sumTiger = 0, sumOther = 0, totalThu = 0, totalChi = 0;
-        // ---- b.iii Bar "Các khoản Chi hàng tháng" ----
-        let sumDien = 0, sumNuoc = 0, sumAnSang = 0, sumDiCho = 0;
 
         data.forEach(t => {
             const amt = t.amount;
@@ -1300,16 +1289,6 @@ function runThongKeTheoKy() {
                 if (t.type === 'CON CỢP') sumTiger += amt; else sumOther += amt;
             } else if (amt < 0 && inPeriodByTime) {
                 totalChi += Math.abs(amt);
-                if (t.subtype === 'Ăn sáng') sumAnSang += Math.abs(amt);
-                if (t.subtype === 'Đi chợ, Siêu thị') sumDiCho += Math.abs(amt);
-            }
-
-            // Điện/Nước: dò theo Ghi chú, KHÔNG theo Timestamp (khoản trả sau)
-            if (amt < 0 && t.subtype === 'Điện' && noteMatchesBillingPeriod(t.note, month, year)) {
-                sumDien += Math.abs(amt);
-            }
-            if (amt < 0 && t.subtype === 'Nước' && noteMatchesBillingPeriod(t.note, month, year)) {
-                sumNuoc += Math.abs(amt);
             }
         });
 
@@ -1321,9 +1300,11 @@ function runThongKeTheoKy() {
         document.getElementById('tk-thuchi-chi').textContent = formatVND(totalChi);
         renderDoughnutChart('tk-chart-thuchi', ['Tổng Thu', 'Tổng Chi'], [totalThu, totalChi], ['#4CAF50', '#F44336']);
 
-        renderSimpleBarChart('tk-chart-monthly',
-            ['Điện', 'Nước', 'Tổng Ăn sáng', 'Tổng Đi chợ, Siêu thị'],
-            [sumDien, sumNuoc, sumAnSang, sumDiCho]);
+        // ---- b.iii Bar "Các khoản Chi hàng tháng": xu hướng CẢ NĂM đang chọn ----
+        const yearLabelEl = document.getElementById('tk-monthly-year-label');
+        if (yearLabelEl) yearLabelEl.textContent = year;
+        const series = computeMonthlyExpenseSeries(data, year);
+        renderMonthlyExpenseTrendChart('tk-chart-monthly', year, series);
 
         // ---- c. So sánh Tháng trước vs Tháng này (cảnh báo > 30%) ----
         renderThongKeComparison(data, month, year);
@@ -1471,56 +1452,7 @@ function renderTopExpenses() {
     });
 } // end function renderTopExpenses
 
-function renderSection4(allData) {
-    const periodSelect = document.getElementById("sec4-period");
-    if (!periodSelect) return;
-
-    const period = periodSelect.value;
-    const run = data => {
-        const now = new Date();
-        let currentBalance = 0;
-        let totalThu = 0;
-        let fullChi = 0;
-        let investmentSavings = 0;
-
-        data.forEach(t => {
-            let d = new Date(t.timestamp);
-            currentBalance += t.amount;
-
-            let isMatch = false;
-            if (period === 'month') {
-                isMatch = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            } else {
-                isMatch = d.getFullYear() === now.getFullYear();
-            }
-
-            if (isMatch) {
-                if (t.amount > 0) {
-                    totalThu += t.amount;
-                } else {
-                    if (t.type === "Đầu tư, tiết kiệm") {
-                        investmentSavings += Math.abs(t.amount);
-                    } else {
-                        fullChi += Math.abs(t.amount);
-                    }
-                }
-            }
-        });
-
-        document.getElementById("sec4-balance").textContent = formatVND(currentBalance);
-        document.getElementById("sec4-thu").textContent = formatVND(totalThu);
-        document.getElementById("sec4-net-chi").textContent = formatVND(fullChi);
-        document.getElementById("sec4-savings").textContent = formatVND(investmentSavings);
-        renderPieChart('chart-sec4-pie', ['Tổng Thu', 'Tổng Chi Thực Tế', 'Tiết Kiệm'],
-                       [totalThu, fullChi, investmentSavings], ['#4CAF50', '#F44336', '#FFEB3B']);
-    };
-
-    if (allData) {
-        run(allData);
-    } else {
-        getAllTransactions(run);
-    }
-} // end function renderSection4
+// [HUB] renderSection4() đã bị xóa cùng Section 4 (gộp chức năng vào Section 5 bên dưới).
 // end ĐỒ THỊ & THỐNG KÊ
 
 // =========================================================================

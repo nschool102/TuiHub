@@ -10,15 +10,9 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
-
-<!-- ===== VENDOR LIBS DÙNG CHUNG (Chart.js cho module Gia đình) ===== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-
-<!-- ===== SHELL CSS (khung navbar, layout tổng) ===== -->
 <link rel="stylesheet" href="./assets/css/shell.css">
-
-<!-- ===== MODULE CSS (mỗi module tự scope theo #module-xxx, không đụng nhau) ===== -->
 <link rel="stylesheet" href="./modules/finance/finance.css">
 <link rel="stylesheet" href="./modules/huyenhoc/huyenhoc.css">
 <link rel="stylesheet" href="./modules/calculator/calculator.css">
@@ -27,18 +21,12 @@
 <body>
 
 <div id="hub-shell">
-
-    <!-- ===== TOP BAR ===== -->
     <div id="hub-topbar">
         <span class="hub-title-icon" id="hub-title-icon">💰</span>
         <span class="hub-title-text" id="hub-title-text">Gia đình</span>
         <span class="hub-title-sub" id="hub-title-sub"></span>
     </div>
-
-    <!-- ===== SUBMENU (cấp 2) ===== -->
     <div id="hub-submenu"></div>
-
-    <!-- ===== NỘI DUNG CÁC MODULE ===== -->
     <div id="hub-main">
 
 <!-- =========================================================================
@@ -299,50 +287,9 @@
 
     <!-- TAB THỐNG KÊ -->
     <div id="tab-thongke" class="tab-content">
+        <!-- [HUB] Section 5: Thống kê theo Tháng/Năm tự chọn
         <div class="card">
-            <h3>Section 1: Cảnh Báo Vượt Hạn Mức (So với tháng trước)</h3>
-            <div id="section1-alerts"></div>
-        </div>
-
-        <div class="card">
-            <h3>Section 2: Tổng Quan Thu - Chi</h3>
-            <div class="stat-row"><span>Tổng Thu:</span><strong id="sec2-thu" style="color:var(--success-color);">0</strong></div>
-            <div class="stat-row"><span>Tổng Chi:</span><strong id="sec2-chi" style="color:var(--danger-color);">0</strong></div>
-            <div class="stat-row"><span>Còn Lại:</span><strong id="sec2-remain">0</strong></div>
-            <div class="chart-container">
-                <canvas id="chart-sec2-pie"></canvas>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Section 3: Tỷ Lệ Nguồn Thu</h3>
-            <div class="stat-row"><span style="color: #8BC34A; font-weight: bold;">MÌNH</span><strong id="sec3-Mine" style="color: #8BC34A; font-weight: bold;">0</strong></div>
-            <div class="stat-row"><span style="color: #E91E63; font-weight: bold;">CON CỢP</span><strong id="sec3-Tiger" style="color: #E91E63; font-weight: bold;">0</strong></div>
-            <div class="chart-container">
-                <canvas id="chart-sec3-pie"></canvas>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Section 4: Báo Cáo Định Kỳ</h3>
-            <div class="form-group">
-                <select id="sec4-period" class="form-control">
-                    <option value="month" selected>Tháng này</option>
-                    <option value="year">Năm nay</option>
-                </select>
-            </div>
-            <div class="stat-row"><span>Số Dư Hiện Tại:</span><strong id="sec4-balance">0</strong></div>
-            <div class="stat-row"><span>Tổng Thu:</span><strong id="sec4-thu" style="color:#4CAF50;">0</strong></div>
-            <div class="stat-row"><span>Tổng Chi Thực Tế:</span><strong id="sec4-net-chi" style="color:#F44336;">0</strong></div>
-            <div class="stat-row"><span>Tổng Số Tiền Tiết Kiệm:</span><strong id="sec4-savings" style="color:#FFEB3B;">0</strong></div>
-            <div class="chart-container">
-                <canvas id="chart-sec4-pie"></canvas>
-            </div>
-        </div>
-
-        <!-- [HUB] Section 5: Thống kê theo Tháng/Năm tự chọn -->
-        <div class="card">
-            <h3>Section 5: Thống Kê Theo Kỳ</h3>
+            <h3>📊 Thống Kê Theo Kỳ</h3>
             <div class="form-group" style="display:flex; gap:10px;">
                 <div style="flex:1">
                     <label style="font-size:12px; display:block; margin-bottom:4px;">Tháng</label>
@@ -385,9 +332,9 @@
                 <canvas id="tk-chart-thuchi"></canvas>
             </div>
 
-            <h4 style="margin:18px 0 8px;">Các khoản Chi hàng tháng</h4>
-            <p style="font-size:11px; opacity:0.7; margin:0 0 8px;">Điện/Nước dò theo Ghi chú (dạng "T{tháng}.{năm}") vì là khoản trả sau; Ăn sáng/Đi chợ Siêu thị dò theo thời gian phát sinh.</p>
-            <div class="chart-container">
+            <h4 style="margin:18px 0 8px;">Các khoản Chi hàng tháng (cả năm <span id="tk-monthly-year-label"></span>)</h4>
+            <p style="font-size:11px; opacity:0.7; margin:0 0 8px;">Điện/Nước dò theo Ghi chú (dạng "T{tháng}.{năm}") vì là khoản trả sau; Ăn sáng/Đi chợ Siêu thị dò theo thời gian phát sinh. Biểu đồ luôn hiện đủ 12 tháng của năm đang chọn.</p>
+            <div class="chart-container" style="height:280px;">
                 <canvas id="tk-chart-monthly"></canvas>
             </div>
 
@@ -642,7 +589,10 @@
 
     <!-- TAB TAROT -->
         <div class="panel" id="tarot-container">
-            <div class="section-box"><h3>🔮 Tarot</h3><p>Tính năng đang phát triển...</p></div>
+            <div class="section-box" id="tarot-draw-box">
+                <h3>🔮 Tarot</h3>
+                <p style="opacity:0.7; font-size:13px;">Đang rút bài...</p>
+            </div>
         </div>
     <!-- end of TAB TAROT -->
 
@@ -650,14 +600,10 @@
     <!-- TAB DECISION -->
         <div class="panel" id="decision-container">
             <div style="display:flex; flex-direction:column; align-items:center; gap: 25px;" class="section-box">
-                <button id="btn-draw" class="submit-btn">🎲 Draw Decision</button>
-                
                 <div id="decision-result">
-                    <h1 id="res-detail">Nhấn nút để lấy quyết định...</h1>
+                    <h1 id="res-detail">Đang lấy quyết định...</h1>
                 </div>
-    
             </div>
-            
         </div>
     <!-- end of TAB DECISION -->
 
@@ -1089,13 +1035,8 @@
 
 
     </div>
-
-    <!-- ===== BOTTOM NAV (cấp 1) ===== -->
     <div id="hub-bottomnav"></div>
 
-    <!-- ===== MODAL THÔNG TIN ỨNG DỤNG (module Gia đình) =====
-         Đặt ở cấp shell, ngoài mọi .app-module, để mở được từ trang Settings
-         dù module Gia đình lúc đó không active/display:none. -->
     <div id="appInfoModal" class="hub-modal">
         <div class="hub-modal-content">
             <button class="hub-modal-close" id="btn-close-app-info">&times;</button>
@@ -1133,13 +1074,9 @@
             <button class="hub-btn" id="btn-refresh-app-info">🔄 Làm mới</button>
         </div>
     </div>
-
 </div>
 
-<!-- ===== SHELL JS ===== -->
 <script src="./assets/js/shell.js"></script>
-
-<!-- ===== MODULE JS (mỗi module tự đăng ký vào window.HubModules) ===== -->
 <script src="./modules/finance/finance.js"></script>
 <script src="./modules/huyenhoc/huyenhoc.js"></script>
 <script src="./modules/calculator/calculator.js"></script>

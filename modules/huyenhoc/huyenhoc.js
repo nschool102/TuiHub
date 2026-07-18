@@ -7,6 +7,99 @@
 'use strict';
 
 
+// =========================================================================
+// [HUB] DỮ LIỆU TAROT — đủ 78 lá, lấy từ file tarot.xlsx user cung cấp.
+// Cấu trúc mỗi lá: { name, keyword, upright (Ý nghĩa xuôi), reversed (Ý nghĩa ngược) }
+// TAROT_PLACEHOLDER chỉ còn là lưới an toàn phòng trường hợp random ra số ngoài 1-78
+// (về lý thuyết không xảy ra vì drawRandomTarotCard() luôn random trong khoảng 1-78).
+// =========================================================================
+const TAROT_CARDS = {
+    1: { name: 'The Fool', keyword: 'Khởi đầu', upright: 'Khởi đầu mới, tự do, lạc quan, dám trải nghiệm, tin vào hành trình, nhiều cơ hội phía trước.', reversed: 'Thiếu suy nghĩ, bốc đồng, liều lĩnh, ngại thay đổi, bỏ lỡ cơ hội hoặc hành động thiếu chuẩn bị.' },
+    2: { name: 'The Magician', keyword: 'Ý chí', upright: 'Có năng lực, tận dụng tài nguyên tốt, sáng tạo, tự tin, biến ý tưởng thành hiện thực.', reversed: 'Thiếu tự tin, lãng phí tài năng, thao túng người khác, nói nhiều làm ít.' },
+    3: { name: 'The High Priestess', keyword: 'Trực giác', upright: 'Trực giác mạnh, trí tuệ nội tâm, bình tĩnh, kiên nhẫn, bí mật sắp được hé lộ.', reversed: 'Bỏ qua trực giác, bối rối, che giấu sự thật, cảm xúc bị dồn nén.' },
+    4: { name: 'The Empress', keyword: 'Nuôi dưỡng', upright: 'Sung túc, tình yêu, chăm sóc, sinh sôi, sáng tạo, phát triển, gia đình hạnh phúc.', reversed: 'Phụ thuộc, nuông chiều quá mức, thiếu chăm sóc bản thân, bế tắc sáng tạo.' },
+    5: { name: 'The Emperor', keyword: 'Kỷ luật', upright: 'Lãnh đạo, ổn định, trách nhiệm, kiểm soát tốt, xây dựng nền tảng vững chắc.', reversed: 'Độc đoán, cứng nhắc, thích kiểm soát, thiếu trách nhiệm hoặc yếu thế.' },
+    6: { name: 'The Hierophant', keyword: 'Truyền thống', upright: 'Học hỏi, cố vấn, đạo đức, truyền thống, tuân thủ quy tắc, phát triển qua giáo dục.', reversed: 'Bảo thủ, chống đối quy tắc, giáo điều, suy nghĩ khuôn mẫu.' },
+    7: { name: 'The Lovers', keyword: 'Lựa chọn', upright: 'Tình yêu, hòa hợp, kết nối, cam kết, lựa chọn đúng đắn theo trái tim.', reversed: 'Mâu thuẫn, chia rẽ, thiếu tin tưởng, quyết định sai lầm, mất cân bằng.' },
+    8: { name: 'The Chariot', keyword: 'Chiến thắng', upright: 'Quyết tâm, kiểm soát, tiến lên, thành công nhờ ý chí mạnh mẽ.', reversed: 'Thiếu định hướng, mất kiểm soát, nóng vội, thất bại do thiếu kỷ luật.' },
+    9: { name: 'Strength', keyword: 'Nội lực', upright: 'Kiên nhẫn, dũng cảm, kiểm soát cảm xúc, sức mạnh nội tâm, lòng bao dung.', reversed: 'Thiếu tự tin, nóng giận, yếu đuối, để cảm xúc chi phối.' },
+    10: { name: 'The Hermit', keyword: 'Chiêm nghiệm', upright: 'Tự nhìn lại bản thân, tìm kiếm tri thức, trưởng thành qua trải nghiệm, sống chậm.', reversed: 'Cô lập, cô đơn, khép kín, né tránh vấn đề, mất phương hướng.' },
+    11: { name: 'Wheel of Fortune', keyword: 'Chu kỳ', upright: 'May mắn, cơ hội, thay đổi tích cực, bước ngoặt, vận mệnh chuyển biến.', reversed: 'Chậm tiến triển, vận xui, chống lại thay đổi, lặp lại sai lầm cũ.' },
+    12: { name: 'Justice', keyword: 'Công bằng', upright: 'Công lý, trung thực, trách nhiệm, quyết định khách quan, nhân quả.', reversed: 'Thiên vị, bất công, né tránh trách nhiệm, thiếu trung thực.' },
+    13: { name: 'The Hanged Man', keyword: 'Buông bỏ', upright: 'Thay đổi góc nhìn, hy sinh, kiên nhẫn, tạm dừng để hiểu rõ hơn.', reversed: 'Cố chấp, trì hoãn vô ích, hy sinh sai chỗ, mắc kẹt.' },
+    14: { name: 'Death', keyword: 'Chuyển hóa', upright: 'Kết thúc một giai đoạn để mở ra điều mới, tái sinh, thay đổi sâu sắc.', reversed: 'Kháng cự thay đổi, sợ buông bỏ, trì trệ, kéo dài điều đã kết thúc.' },
+    15: { name: 'Temperance', keyword: 'Cân bằng', upright: 'Điều độ, hòa hợp, chữa lành, kiên nhẫn, phối hợp hiệu quả.', reversed: 'Mất cân bằng, cực đoan, nóng vội, thiếu kiểm soát.' },
+    16: { name: 'The Devil', keyword: 'Ràng buộc', upright: 'Ham muốn, cám dỗ, vật chất, nhận ra sự phụ thuộc để thay đổi.', reversed: 'Giải thoát khỏi ràng buộc, từ bỏ nghiện ngập, giành lại quyền kiểm soát.' },
+    17: { name: 'The Tower', keyword: 'Biến cố', upright: 'Sự thật bị phơi bày, thay đổi đột ngột, phá bỏ nền tảng cũ để xây mới.', reversed: 'Tránh được khủng hoảng lớn, chậm thay đổi, cố níu giữ điều không còn phù hợp.' },
+    18: { name: 'The Star', keyword: 'Hy vọng', upright: 'Hy vọng, chữa lành, cảm hứng, niềm tin, tương lai tươi sáng.', reversed: 'Mất niềm tin, bi quan, thất vọng, thiếu động lực.' },
+    19: { name: 'The Moon', keyword: 'Tiềm thức', upright: 'Trực giác, bí ẩn, giấc mơ, khám phá nội tâm, chưa rõ sự thật.', reversed: 'Sự thật dần sáng tỏ, vượt qua sợ hãi, bớt hoang mang hoặc vẫn đang tự lừa dối mình.' },
+    20: { name: 'The Sun', keyword: 'Thành công', upright: 'Hạnh phúc, thành công, sức khỏe, lạc quan, năng lượng tích cực, mọi việc thuận lợi.', reversed: 'Niềm vui chưa trọn vẹn, chậm thành công, quá tự tin hoặc kỳ vọng quá cao.' },
+    21: { name: 'Judgement', keyword: 'Thức tỉnh', upright: 'Thức tỉnh, đánh giá bản thân, tha thứ, bước sang giai đoạn mới.', reversed: 'Tự chỉ trích, chối bỏ sự thật, ngại thay đổi, chưa sẵn sàng.' },
+    22: { name: 'The World', keyword: 'Hoàn thành', upright: 'Hoàn thành mục tiêu, thành công viên mãn, kết thúc chu kỳ, mở ra hành trình mới.', reversed: 'Chưa hoàn tất, trì hoãn, cảm giác thiếu trọn vẹn, còn bài học chưa học xong.' },
+    23: { name: 'Ace of Wands', keyword: 'Khởi đầu', upright: 'Cơ hội mới, cảm hứng, sáng tạo, nhiệt huyết, bắt đầu dự án hoặc công việc mới.', reversed: 'Thiếu động lực, ý tưởng bị trì hoãn, mất hứng thú, bỏ lỡ cơ hội.' },
+    24: { name: 'Two of Wands', keyword: 'Lập kế hoạch', upright: 'Lên kế hoạch dài hạn, mở rộng tầm nhìn, chuẩn bị cho bước tiến mới.', reversed: 'Thiếu định hướng, sợ thay đổi, do dự, kế hoạch chưa chín muồi.' },
+    25: { name: 'Three of Wands', keyword: 'Mở rộng', upright: 'Thành quả ban đầu xuất hiện, cơ hội từ xa, hợp tác, phát triển.', reversed: 'Chậm tiến độ, thất vọng, kế hoạch gặp trở ngại, kỳ vọng không như mong muốn.' },
+    26: { name: 'Four of Wands', keyword: 'Ăn mừng', upright: 'Thành công, ổn định, đoàn tụ, lễ cưới, tân gia, gia đình hạnh phúc.', reversed: 'Bất hòa trong gia đình, thiếu ổn định, niềm vui bị trì hoãn.' },
+    27: { name: 'Five of Wands', keyword: 'Cạnh tranh', upright: 'Cạnh tranh lành mạnh, thử thách giúp trưởng thành, nhiều ý kiến khác nhau.', reversed: 'Xung đột kéo dài, né tránh mâu thuẫn, cạnh tranh không công bằng.' },
+    28: { name: 'Six of Wands', keyword: 'Chiến thắng', upright: 'Thành công, được công nhận, chiến thắng, danh tiếng, tự tin.', reversed: 'Thiếu sự công nhận, thất vọng, kiêu ngạo, thành công chưa trọn vẹn.' },
+    29: { name: 'Seven of Wands', keyword: 'Bảo vệ', upright: 'Kiên trì bảo vệ quan điểm, vượt áp lực, giữ vững lập trường.', reversed: 'Bị áp đảo, mệt mỏi, bỏ cuộc, thiếu niềm tin vào bản thân.' },
+    30: { name: 'Eight of Wands', keyword: 'Tốc độ', upright: 'Mọi việc tiến triển nhanh, tin tức tốt, di chuyển, cơ hội đến liên tục.', reversed: 'Trì hoãn, hiểu lầm trong giao tiếp, mọi việc đình trệ.' },
+    31: { name: 'Nine of Wands', keyword: 'Kiên cường', upright: 'Bền bỉ, cảnh giác, không bỏ cuộc dù đã mệt mỏi.', reversed: 'Kiệt sức, nghi ngờ, phòng thủ quá mức, mất niềm tin.' },
+    32: { name: 'Ten of Wands', keyword: 'Gánh nặng', upright: 'Trách nhiệm lớn, chăm chỉ, sắp hoàn thành công việc khó khăn.', reversed: 'Quá tải, áp lực, ôm đồm, cần buông bớt trách nhiệm.' },
+    33: { name: 'Page of Wands', keyword: 'Khám phá', upright: 'Tin vui, học hỏi, nhiệt huyết, khởi đầu hành trình mới, tò mò.', reversed: 'Thiếu định hướng, bốc đồng, hứa nhiều làm ít, thiếu trưởng thành.' },
+    34: { name: 'Knight of Wands', keyword: 'Hành động', upright: 'Quyết đoán, năng lượng mạnh, dám làm, phiêu lưu, theo đuổi mục tiêu.', reversed: 'Nóng vội, hấp tấp, thiếu kiên trì, dễ bỏ ngang.' },
+    35: { name: 'Queen of Wands', keyword: 'Tự tin', upright: 'Quyến rũ, độc lập, sáng tạo, lãnh đạo bằng sự nhiệt tình và lòng tin.', reversed: 'Ghen tị, kiểm soát, nóng tính, mất tự tin hoặc quá tự cao.' },
+    36: { name: 'King of Wands', keyword: 'Lãnh đạo', upright: 'Nhà lãnh đạo truyền cảm hứng, tầm nhìn lớn, quyết đoán, thành công trong sự nghiệp.', reversed: 'Độc đoán, bốc đồng, tham vọng mù quáng, lạm dụng quyền lực.' },
+    37: { name: 'Ace of Cups', keyword: 'Cảm xúc mới', upright: 'Khởi đầu tình yêu, niềm vui, chữa lành, trực giác mạnh, trái tim rộng mở.', reversed: 'Khép lòng, cảm xúc bị dồn nén, khó bày tỏ tình cảm, cơ hội tình cảm bị bỏ lỡ.' },
+    38: { name: 'Two of Cups', keyword: 'Kết nối', upright: 'Tình yêu đôi lứa, hợp tác, sự hòa hợp, tin tưởng, gắn kết.', reversed: 'Hiểu lầm, chia rẽ, mất cân bằng trong mối quan hệ, thiếu giao tiếp.' },
+    39: { name: 'Three of Cups', keyword: 'Ăn mừng', upright: 'Tình bạn, đoàn tụ, lễ cưới, tiệc tùng, niềm vui chung.', reversed: 'Thị phi, bạn bè xấu, quá sa đà vui chơi, mối quan hệ phức tạp.' },
+    40: { name: 'Four of Cups', keyword: 'Suy ngẫm', upright: 'Tạm dừng để nhìn lại, cân nhắc cơ hội, hướng nội.', reversed: 'Thức tỉnh, nhận ra cơ hội mới, vượt qua sự trì trệ, mở lòng.' },
+    41: { name: 'Five of Cups', keyword: 'Mất mát', upright: 'Buồn bã, tiếc nuối, thất vọng, mất mát nhưng vẫn còn hy vọng nếu biết nhìn lại.', reversed: 'Buông bỏ quá khứ, chữa lành, chấp nhận và bước tiếp.' },
+    42: { name: 'Six of Cups', keyword: 'Kỷ niệm', upright: 'Hoài niệm, tuổi thơ, người cũ, lòng tốt, sự ngây thơ.', reversed: 'Mắc kẹt trong quá khứ, chưa trưởng thành, khó buông bỏ ký ức.' },
+    43: { name: 'Seven of Cups', keyword: 'Lựa chọn', upright: 'Nhiều cơ hội, nhiều ước mơ, trí tưởng tượng phong phú, cần tỉnh táo khi lựa chọn.', reversed: 'Nhìn rõ thực tế, quyết định dứt khoát, bớt mơ mộng hoặc mất phương hướng.' },
+    44: { name: 'Eight of Cups', keyword: 'Rời đi', upright: 'Buông bỏ điều không còn phù hợp, tìm kiếm giá trị sâu sắc hơn.', reversed: 'Không dám rời đi, quay lại chuyện cũ, sợ thay đổi, kéo dài sự không hạnh phúc.' },
+    45: { name: 'Nine of Cups', keyword: 'Viên mãn', upright: 'Điều ước thành hiện thực, hài lòng, hạnh phúc, thành công về cảm xúc.', reversed: 'Chưa thỏa mãn, ích kỷ, hưởng thụ quá mức, mong muốn chưa thành.' },
+    46: { name: 'Ten of Cups', keyword: 'Hạnh phúc', upright: 'Gia đình hạnh phúc, viên mãn, hòa thuận, tình yêu bền vững, bình an.', reversed: 'Mâu thuẫn gia đình, rạn nứt, kỳ vọng không thực tế, thiếu hòa hợp.' },
+    47: { name: 'Page of Cups', keyword: 'Tin vui', upright: 'Tin vui về tình cảm, sáng tạo, trực giác, sự hồn nhiên, cơ hội mới.', reversed: 'Non nớt, cảm xúc thất thường, mơ mộng, thiếu trưởng thành.' },
+    48: { name: 'Knight of Cups', keyword: 'Lãng mạn', upright: 'Theo đuổi tình yêu, lời mời, sự ga-lăng, giàu cảm xúc và lý tưởng.', reversed: 'Hứa nhiều làm ít, thất thường, quá cảm tính, trốn tránh thực tế.' },
+    49: { name: 'Queen of Cups', keyword: 'Đồng cảm', upright: 'Từ bi, trực giác mạnh, biết lắng nghe, giàu lòng yêu thương, chữa lành.', reversed: 'Quá nhạy cảm, phụ thuộc cảm xúc, hy sinh bản thân quá mức, dễ tổn thương.' },
+    50: { name: 'King of Cups', keyword: 'Cân bằng', upright: 'Trưởng thành về cảm xúc, điềm tĩnh, biết kiểm soát bản thân, đáng tin cậy.', reversed: 'Kìm nén cảm xúc, lạnh lùng, thao túng cảm xúc người khác, thiếu đồng cảm.' },
+    51: { name: 'Ace of Swords', keyword: 'Sự thật', upright: 'Ý tưởng sáng suốt, sự thật được hé lộ, quyết định dứt khoát, chiến thắng nhờ lý trí.', reversed: 'Thiếu rõ ràng, hiểu lầm, quyết định sai, tư duy rối loạn.' },
+    52: { name: 'Two of Swords', keyword: 'Do dự', upright: 'Cân nhắc, bế tắc, cần thêm thông tin trước khi quyết định.', reversed: 'Thoát khỏi bế tắc, chấp nhận sự thật, hoặc tiếp tục né tránh thực tế.' },
+    53: { name: 'Three of Swords', keyword: 'Tổn thương', upright: 'Đau lòng, chia ly, phản bội, sự thật khiến đau đớn nhưng giúp trưởng thành.', reversed: 'Chữa lành, tha thứ, buông bỏ nỗi đau, hoặc vẫn chưa vượt qua tổn thương.' },
+    54: { name: 'Four of Swords', keyword: 'Nghỉ ngơi', upright: 'Nghỉ ngơi, hồi phục, tĩnh tâm, cần thời gian để lấy lại năng lượng.', reversed: 'Kiệt sức, trì hoãn quá lâu, hoặc đã sẵn sàng quay lại hành động.' },
+    55: { name: 'Five of Swords', keyword: 'Xung đột', upright: 'Mâu thuẫn, thắng bằng mọi giá, cạnh tranh thiếu lành mạnh, tổn thất sau chiến thắng.', reversed: 'Hòa giải, nhận lỗi, buông bỏ hiếu thắng, hoặc mâu thuẫn kéo dài.' },
+    56: { name: 'Six of Swords', keyword: 'Chuyển tiếp', upright: 'Rời khỏi khó khăn, chữa lành, chuyển sang giai đoạn bình yên hơn.', reversed: 'Khó buông bỏ quá khứ, trì trệ, quay lại vấn đề cũ.' },
+    57: { name: 'Seven of Swords', keyword: 'Mưu lược', upright: 'Khéo léo, chiến lược, giữ bí mật, hành động độc lập. Trong ngữ cảnh xấu có thể là lừa dối hoặc né tránh.', reversed: 'Sự thật bị phát hiện, thành thật hơn, hoặc tiếp tục tự lừa dối mình.' },
+    58: { name: 'Eight of Swords', keyword: 'Mắc kẹt', upright: 'Cảm thấy bị giới hạn, thiếu tự tin, nỗi sợ tự tạo ra rào cản.', reversed: 'Giải phóng bản thân, nhìn ra lối thoát, lấy lại niềm tin.' },
+    59: { name: 'Nine of Swords', keyword: 'Lo âu', upright: 'Căng thẳng, mất ngủ, lo lắng, ám ảnh, cảm giác tội lỗi.', reversed: 'Giảm lo âu, chữa lành tinh thần, hoặc tiếp tục chối bỏ vấn đề.' },
+    60: { name: 'Ten of Swords', keyword: 'Kết thúc', upright: 'Kết thúc đau đớn, chạm đáy, chấp nhận để bắt đầu lại.', reversed: 'Phục hồi, đứng dậy sau thất bại, hoặc kéo dài sự đau khổ.' },
+    61: { name: 'Page of Swords', keyword: 'Học hỏi', upright: 'Ham học hỏi, tò mò, quan sát tốt, giao tiếp nhanh, ý tưởng mới.', reversed: 'Thiếu chín chắn, nhiều chuyện, hiểu lầm, nói mà không nghĩ.' },
+    62: { name: 'Knight of Swords', keyword: 'Quyết đoán', upright: 'Hành động nhanh, dũng cảm, quyết tâm, theo đuổi mục tiêu bằng lý trí.', reversed: 'Nóng nảy, hiếu thắng, hấp tấp, thiếu cân nhắc hậu quả.' },
+    63: { name: 'Queen of Swords', keyword: 'Sáng suốt', upright: 'Thông minh, khách quan, độc lập, nói thẳng, công bằng, nhìn rõ bản chất vấn đề.', reversed: 'Lạnh lùng, cay nghiệt, quá phê phán, xa cách cảm xúc.' },
+    64: { name: 'King of Swords', keyword: 'Trí tuệ', upright: 'Lãnh đạo bằng trí tuệ, công minh, logic, kỷ luật, đưa ra quyết định sáng suốt.', reversed: 'Độc đoán, cứng nhắc, thao túng bằng lời nói, lạm dụng quyền lực.' },
+    65: { name: 'Ace of Pentacles', keyword: 'Cơ hội', upright: 'Cơ hội tài chính, việc làm mới, đầu tư tốt, khởi đầu vững chắc, phát triển lâu dài.', reversed: 'Bỏ lỡ cơ hội, đầu tư sai, thiếu chuẩn bị, bất ổn tài chính.' },
+    66: { name: 'Two of Pentacles', keyword: 'Cân bằng', upright: 'Quản lý nhiều việc cùng lúc, linh hoạt, cân bằng công việc và cuộc sống.', reversed: 'Quá tải, mất cân bằng, quản lý tài chính kém, áp lực.' },
+    67: { name: 'Three of Pentacles', keyword: 'Hợp tác', upright: 'Làm việc nhóm hiệu quả, học hỏi, được công nhận năng lực, phát triển kỹ năng.', reversed: 'Thiếu hợp tác, làm việc kém hiệu quả, không được đánh giá đúng.' },
+    68: { name: 'Four of Pentacles', keyword: 'Giữ gìn', upright: 'Tiết kiệm, ổn định tài chính, bảo vệ thành quả, quản lý tài sản.', reversed: 'Keo kiệt, sợ mất mát, bám víu vật chất, hoặc chi tiêu thiếu kiểm soát.' },
+    69: { name: 'Five of Pentacles', keyword: 'Thiếu thốn', upright: 'Khó khăn tài chính, cô đơn, cảm giác bị bỏ rơi, cần tìm sự giúp đỡ.', reversed: 'Phục hồi tài chính, vượt qua khó khăn, có người hỗ trợ.' },
+    70: { name: 'Six of Pentacles', keyword: 'Cho và nhận', upright: 'Hào phóng, cân bằng trong việc cho nhận, hỗ trợ lẫn nhau, từ thiện.', reversed: 'Mất cân bằng, phụ thuộc, cho đi có điều kiện, nợ nần.' },
+    71: { name: 'Seven of Pentacles', keyword: 'Kiên nhẫn', upright: 'Chờ thành quả, đầu tư dài hạn, đánh giá kết quả, kiên trì.', reversed: 'Thiếu kiên nhẫn, muốn có kết quả ngay, đầu tư không hiệu quả.' },
+    72: { name: 'Eight of Pentacles', keyword: 'Rèn luyện', upright: 'Chăm chỉ, học nghề, nâng cao kỹ năng, làm việc tỉ mỉ, chuyên nghiệp.', reversed: 'Chán nản, thiếu tập trung, làm việc qua loa, không chịu học hỏi.' },
+    73: { name: 'Nine of Pentacles', keyword: 'Thành tựu', upright: 'Độc lập tài chính, tận hưởng thành quả, cuộc sống sung túc, tự chủ.', reversed: 'Phụ thuộc người khác, chi tiêu xa xỉ, thành công chưa bền vững.' },
+    74: { name: 'Ten of Pentacles', keyword: 'Gia sản', upright: 'Giàu có, tài sản gia đình, ổn định lâu dài, di sản, thịnh vượng.', reversed: 'Mâu thuẫn tài sản, bất ổn gia đình, tài chính thiếu bền vững.' },
+    75: { name: 'Page of Pentacles', keyword: 'Học hỏi', upright: 'Cơ hội học tập, việc làm mới, tinh thần cầu tiến, bắt đầu đầu tư hoặc kinh doanh.', reversed: 'Thiếu tập trung, lười học, bỏ lỡ cơ hội phát triển.' },
+    76: { name: 'Knight of Pentacles', keyword: 'Chăm chỉ', upright: 'Kiên trì, trách nhiệm, đáng tin cậy, làm việc bền bỉ để đạt mục tiêu.', reversed: 'Bảo thủ, chậm chạp, trì trệ, thiếu linh hoạt.' },
+    77: { name: 'Queen of Pentacles', keyword: 'Nuôi dưỡng', upright: 'Giỏi quản lý tài chính, thực tế, chu đáo, cân bằng gia đình và công việc, biết chăm sóc người khác.', reversed: 'Quá chú trọng vật chất, kiểm soát, bỏ bê bản thân hoặc gia đình.' },
+    78: { name: 'King of Pentacles', keyword: 'Thịnh vượng', upright: 'Thành công về tài chính, doanh nhân, lãnh đạo đáng tin, ổn định, giàu kinh nghiệm.', reversed: 'Tham lam, cứng nhắc, quá coi trọng tiền bạc, lạm dụng quyền lực.' }
+};
+const TAROT_PLACEHOLDER = {
+    name: 'Đang cập nhật',
+    keyword: '—',
+    upright: 'Dữ liệu lá bài này đang được cập nhật, quay lại sau nhé.',
+    reversed: 'Dữ liệu lá bài này đang được cập nhật, quay lại sau nhé.'
+};
+
 // Dữ liệu DECISION MAKER
 const decisionDetails = [
   {ID:1, detail: "Bạn cần sớm đưa ra quyết định"},
@@ -1450,13 +1543,13 @@ function switchTab(pageName) {
             break;
 
         case 'tarot':
-            // Logic cho Tarot sẽ phát triển ở đây
-            console.log("Đang load module Tarot...");
+            // [HUB] Tự động rút 1 lá Tarot ngẫu nhiên MỖI LẦN vào tab (không cần bấm nút).
+            drawRandomTarotCard();
             break;
 
         case 'decision':
-            // Logic cho Decision sẽ phát triển ở đây
-            console.log("Đang load module Decision...");
+            // [HUB] Tự động lấy 1 quyết định ngẫu nhiên MỖI LẦN vào tab (đã bỏ nút Draw Decision).
+            handleDrawDecision();
             break;
         case 'settings':
             console.log("Đang hiển thị trang cài đặt...");
@@ -1548,6 +1641,29 @@ function setupTabs() {
 // clientSide.js
 
 // Hàm xử lý khi bấm nút "Draw"
+// [HUB] Rút 1 lá Tarot ngẫu nhiên: số 1-78 + hướng X (xuôi) / N (ngược), dò trong TAROT_CARDS.
+function drawRandomTarotCard() {
+    const num = Math.floor(Math.random() * 78) + 1;
+    const orientation = Math.random() < 0.5 ? 'X' : 'N';
+    const card = TAROT_CARDS[num] || TAROT_PLACEHOLDER;
+    const isUpright = orientation === 'X';
+
+    const box = document.getElementById('tarot-draw-box');
+    if (!box) return;
+
+    box.innerHTML = `
+        <h3>🔮 Lá bài hôm nay</h3>
+        <div class="tarot-card-number">Lá số ${num}${orientation}</div>
+        <div class="tarot-card-name">${card.name}</div>
+        <div class="tarot-card-keyword">${card.keyword}</div>
+        <div class="tarot-orientation-badge ${isUpright ? 'upright' : 'reversed'}">${isUpright ? '↑ Xuôi' : '↓ Ngược'}</div>
+        <div class="tarot-card-meaning">
+            <div class="tarot-card-meaning-label">${isUpright ? 'Ý nghĩa xuôi' : 'Ý nghĩa ngược'}</div>
+            ${isUpright ? card.upright : card.reversed}
+        </div>
+    `;
+} // end function drawRandomTarotCard
+
 function handleDrawDecision() {
     // Truy cập trực tiếp biến decisionDetails nằm ở file serverSide.js
     if (typeof decisionDetails === 'undefined') {
@@ -1568,11 +1684,6 @@ function handleDrawDecision() {
 
 // [HUB] Khởi tạo module Huyền học — được shell.js gọi lazy qua HubModules.huyenhoc.init()
 function huyenhocModuleInit() {
-    const btnDraw = document.getElementById('btn-draw');
-    if (btnDraw) {
-        btnDraw.addEventListener('click', handleDrawDecision);
-    }
-
     initApp();
     setupTabs();         // vô hại: không còn .tab trong DOM (đã thay bằng hub-submenu), forEach rỗng
     initThemeSelector();
