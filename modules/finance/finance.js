@@ -1066,6 +1066,8 @@ function renderDoughnutChart(canvasId, labels, dataset, customColors = null) {
 } // end function renderDoughnutChart
 
 // [HUB] Bar chart đơn giản nhận thẳng labels/dataset (dùng cho Section 5: Các khoản Chi hàng tháng)
+// Số tiền hiển thị NGAY DƯỚI tên khoản chi trên trục X (dạng 2 dòng), không ghi nổi phía
+// trên cột nữa vì cột cao dễ bị cắt chữ ở mép trên canvas.
 function renderSimpleBarChart(canvasId, labels, dataset) {
     if (charts[canvasId]) {
         charts[canvasId].destroy();
@@ -1077,11 +1079,13 @@ function renderSimpleBarChart(canvasId, labels, dataset) {
 
     const ctx = canvasEl.getContext('2d');
     const colors = ['#FF9800', '#2196F3', '#4CAF50', '#E91E63'];
+    // Mỗi tick trục X là 1 mảng 2 dòng: [Tên khoản chi, Số tiền] -> Chart.js tự xuống dòng
+    const twoLineLabels = labels.map((lbl, i) => [lbl, formatVND(dataset[i])]);
 
     charts[canvasId] = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: labels,
+            labels: twoLineLabels,
             datasets: [{
                 label: 'Số tiền',
                 data: dataset,
@@ -1090,21 +1094,11 @@ function renderSimpleBarChart(canvasId, labels, dataset) {
                 borderRadius: 6
             }]
         },
-        plugins: [ChartDataLabels],
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                datalabels: {
-                    color: '#ffffff',
-                    font: { weight: 'bold', size: 10 },
-                    anchor: 'end',
-                    align: 'end',
-                    formatter: function(value) {
-                        return value > 0 ? formatVND(value) : '';
-                    }
-                },
                 tooltip: {
                     callbacks: {
                         label: function(ctx) { return formatVND(ctx.raw); }
@@ -1113,7 +1107,7 @@ function renderSimpleBarChart(canvasId, labels, dataset) {
             },
             scales: {
                 y: { beginAtZero: true, ticks: { font: { size: 10 } } },
-                x: { ticks: { font: { size: 10 } } }
+                x: { ticks: { font: { size: 10.5, weight: 'bold' } } }
             }
         }
     });
@@ -1358,7 +1352,7 @@ function renderThongKeComparison(data, month, year) {
         { label: 'Mua sắm & Cá nhân', match: t => t.type === 'Mua sắm & Cá nhân', byNote: false }
     ];
 
-    let rowsHtml = '';
+    const rows = [];
     let hasAlert = false;
 
     categories.forEach(cat => {
@@ -1375,21 +1369,48 @@ function renderThongKeComparison(data, month, year) {
             }
         });
 
+        // [HUB] Bỏ qua hạng mục không có dữ liệu ở cả 2 tháng — không list tràn lan.
+        if (curSum === 0 && prevSum === 0) return;
+
         const pctChange = prevSum > 0 ? ((curSum - prevSum) / prevSum * 100) : (curSum > 0 ? 100 : 0);
         const isOver30 = prevSum > 0 && pctChange > 30;
         if (isOver30) hasAlert = true;
 
-        rowsHtml += `<div class="stat-row"${isOver30 ? ' style="color:var(--danger-color);font-weight:bold;"' : ''}>
-            <span>${cat.label}${isOver30 ? ' ⚠️' : ''}</span>
-            <strong>${formatVND(curSum)} <span style="font-size:11px; font-weight:normal; opacity:0.7;">(tháng trước: ${formatVND(prevSum)}${prevSum > 0 ? ', ' + (pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '%' : ''})</span></strong>
-        </div>`;
+        rows.push({ label: cat.label, curSum, prevSum, pctChange, isOver30 });
     });
+
+    if (rows.length === 0) {
+        container.innerHTML = '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu để so sánh trong 2 tháng này.</p>';
+        return;
+    }
 
     const alertHtml = hasAlert
         ? '<div class="alert-box" style="margin-bottom:10px;">⚠️ Có hạng mục chi vượt 30% so với tháng trước!</div>'
         : '<p style="color:green; font-size:12.5px; margin-bottom:10px;">An toàn! Không có hạng mục nào vượt 30% so với tháng trước.</p>';
 
-    container.innerHTML = alertHtml + rowsHtml;
+    const tableRows = rows.map(r => {
+        const pctSign = r.pctChange >= 0 ? '+' : '';
+        const pctStr = r.prevSum > 0 ? `${pctSign}${r.pctChange.toFixed(1)}%` : '—';
+        const isSafeIncrease = !r.isOver30 && r.pctChange > 0;
+        const rowClass = r.isOver30 ? ' class="tk-over-30"' : '';
+        const pctCellClass = isSafeIncrease ? ' class="tk-safe-increase"' : '';
+        const labelHtml = r.isOver30 ? `${r.label} ⚠️` : r.label;
+
+        return `<tr${rowClass}>
+            <td>${labelHtml}</td>
+            <td>${formatVND(r.curSum)}</td>
+            <td>${formatVND(r.prevSum)}</td>
+            <td${pctCellClass}>${pctStr}</td>
+        </tr>`;
+    }).join('');
+
+    container.innerHTML = alertHtml + `
+        <table class="tk-compare-table">
+            <thead>
+                <tr><th></th><th>Tháng này</th><th>Tháng trước</th><th>%</th></tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+        </table>`;
 } // end function renderThongKeComparison
 
 function renderTopExpenses() {

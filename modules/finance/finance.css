@@ -388,6 +388,45 @@
     white-space: nowrap;
 }
 
+/* [HUB] Section 5: bảng so sánh Tháng trước vs Tháng này */
+#module-finance .tk-compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    margin-top: 8px;
+}
+#module-finance .tk-compare-table th,
+#module-finance .tk-compare-table td {
+    padding: 9px 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+#module-finance .tk-compare-table th:first-child,
+#module-finance .tk-compare-table td:first-child {
+    text-align: left;
+    white-space: normal;
+}
+#module-finance .tk-compare-table th {
+    font-weight: bold;
+    color: var(--stat-label-color);
+    background-color: var(--secondary-bg);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+/* Vượt quá 30% so với tháng trước: chữ đỏ + nền vàng chanh nổi bật */
+#module-finance .tk-compare-table tr.tk-over-30 td {
+    color: #d32f2f;
+    background-color: #e6ff00;
+    font-weight: bold;
+}
+/* Tăng nhưng an toàn (≤30%): chữ xanh neon */
+#module-finance .tk-compare-table .tk-safe-increase {
+    color: #39ff14;
+    font-weight: bold;
+}
+
 /* ==========================================================================
    13. SCROLL TO TOP BUTTON
    ========================================================================== */
