@@ -4,7 +4,7 @@
 // deploy bản mới để buộc client tải lại cache.
 // =========================================================================
 
-const CACHE_NAME = 'tui-hub-v14';
+const CACHE_NAME = 'tui-hub-v15';
 const ASSETS = [
     './',
     './index.html',

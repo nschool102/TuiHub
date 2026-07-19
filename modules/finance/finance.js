@@ -1370,78 +1370,70 @@ function runThongKeTheoKy() {
     });
 } // end function runThongKeTheoKy
 
-// [HUB] Bảng "Thu nhập MÌNH vs CON CỢP" theo Subtype — Type = "CON CỢP" tính vào cột CON CỢP,
-// mọi Type khác (miễn số tiền dương = khoản Thu) tính vào cột MÌNH.
+// [HUB] Bảng "Thu nhập MÌNH vs CON CỢP" — liệt kê TỪNG giao dịch (không gộp theo Subtype),
+// dòng đầu là tổng cột được tô nổi bật, mỗi dòng sau là 1 giao dịch kèm Ghi chú gốc.
 function buildIncomeBreakdownTable(data, month, year) {
-    const subtypeMap = {};
-    data.forEach(t => {
-        if (t.amount <= 0 || !timestampInPeriod(t.timestamp, month, year)) return;
-        const sub = (t.subtype || '(Không có)').trim();
-        if (!subtypeMap[sub]) subtypeMap[sub] = { mine: 0, tiger: 0 };
-        if (matchesCategory(t.type, 'CON CỢP')) subtypeMap[sub].tiger += t.amount;
-        else subtypeMap[sub].mine += t.amount;
-    });
+    const rows = data.filter(t => t.amount > 0 && timestampInPeriod(t.timestamp, month, year))
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    const subtypes = Object.keys(subtypeMap);
-    if (subtypes.length === 0) {
+    if (rows.length === 0) {
         return '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu thu nhập trong kỳ này.</p>';
     }
 
     let totalMine = 0, totalTiger = 0;
-    subtypes.forEach(s => { totalMine += subtypeMap[s].mine; totalTiger += subtypeMap[s].tiger; });
+    const bodyRows = rows.map(t => {
+        const isTiger = matchesCategory(t.type, 'CON CỢP');
+        if (isTiger) totalTiger += t.amount; else totalMine += t.amount;
+        return `<tr>
+            <td>${t.subtype || ''}</td>
+            <td>${!isTiger ? formatVND(t.amount) : ''}</td>
+            <td>${isTiger ? formatVND(t.amount) : ''}</td>
+            <td class="tk-note-col">${t.note || ''}</td>
+        </tr>`;
+    }).join('');
 
-    const rows = subtypes.map(s => `
-        <tr>
-            <td>${s}</td>
-            <td>${subtypeMap[s].mine > 0 ? formatVND(subtypeMap[s].mine) : ''}</td>
-            <td>${subtypeMap[s].tiger > 0 ? formatVND(subtypeMap[s].tiger) : ''}</td>
-        </tr>`).join('');
-
-    return `<table class="tk-compare-table">
-        <thead><tr><th>SubType</th><th>MÌNH</th><th>CON CỢP</th></tr></thead>
+    return `<div style="overflow-x:auto;"><table class="tk-compare-table tk-detail-table">
+        <thead><tr><th>SUBTYPE</th><th>MÌNH</th><th>CON CỢP</th><th>NOTE</th></tr></thead>
         <tbody>
-            <tr style="font-weight:bold;"><td></td><td>${formatVND(totalMine)}</td><td>${formatVND(totalTiger)}</td></tr>
-            ${rows}
+            <tr class="tk-total-row"><td></td><td>${formatVND(totalMine)}</td><td>${formatVND(totalTiger)}</td><td></td></tr>
+            ${bodyRows}
         </tbody>
-    </table>`;
+    </table></div>`;
 } // end function buildIncomeBreakdownTable
 
-// [HUB] Bảng "Tiền học" theo Subtype (Học phí/Học thêm/Quĩ lớp/Lệ phí), tách cột NHÍM/VOI
-// theo cột F (GHI CHÚ 2) của các giao dịch Chi có Type = "Giáo dục".
+// [HUB] Bảng "Tiền học" NHÍM/VOI — liệt kê TỪNG giao dịch Chi có Type = "Giáo dục" (không gộp
+// theo Subtype), dòng đầu là tổng cột tô nổi bật, mỗi dòng sau kèm Ghi chú gốc (cột E).
 function buildGiaoDucTable(data, month, year) {
-    const subtypeMap = {};
-    data.forEach(t => {
-        if (t.amount >= 0 || !matchesCategory(t.type, 'Giáo dục') || !timestampInPeriod(t.timestamp, month, year)) return;
-        const sub = (t.subtype || '(Không có)').trim();
-        if (!subtypeMap[sub]) subtypeMap[sub] = { nhim: 0, voi: 0 };
-        const target = (t.note2 || '').toString().trim().toUpperCase();
-        const abs = Math.abs(t.amount);
-        if (target === 'NHÍM') subtypeMap[sub].nhim += abs;
-        else if (target === 'VOI') subtypeMap[sub].voi += abs;
-    });
+    const rows = data.filter(t => t.amount < 0 && matchesCategory(t.type, 'Giáo dục') && timestampInPeriod(t.timestamp, month, year))
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    const subtypes = Object.keys(subtypeMap);
-    if (subtypes.length === 0) {
+    if (rows.length === 0) {
         return '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu tiền học trong kỳ này.</p>';
     }
 
     let totalNhim = 0, totalVoi = 0;
-    subtypes.forEach(s => { totalNhim += subtypeMap[s].nhim; totalVoi += subtypeMap[s].voi; });
+    const bodyRows = rows.map(t => {
+        const target = (t.note2 || '').toString().trim().toUpperCase();
+        const abs = Math.abs(t.amount);
+        const isNhim = target === 'NHÍM';
+        const isVoi = target === 'VOI';
+        if (isNhim) totalNhim += abs;
+        if (isVoi) totalVoi += abs;
+        return `<tr>
+            <td>${t.subtype || ''}</td>
+            <td>${isNhim ? formatVND(abs) : ''}</td>
+            <td>${isVoi ? formatVND(abs) : ''}</td>
+            <td class="tk-note-col">${t.note || ''}</td>
+        </tr>`;
+    }).join('');
 
-    const rows = subtypes.map(s => `
-        <tr>
-            <td>${s}</td>
-            <td>${subtypeMap[s].nhim > 0 ? formatVND(subtypeMap[s].nhim) : ''}</td>
-            <td>${subtypeMap[s].voi > 0 ? formatVND(subtypeMap[s].voi) : ''}</td>
-        </tr>`).join('');
-
-    return `<table class="tk-compare-table">
-        <thead><tr><th>Detail</th><th>NHÍM</th><th>VOI</th></tr></thead>
+    return `<div style="overflow-x:auto;"><table class="tk-compare-table tk-detail-table">
+        <thead><tr><th>SUBTYPE</th><th>NHÍM</th><th>VOI</th><th>NOTE</th></tr></thead>
         <tbody>
-            <tr style="font-weight:bold;"><td></td><td>${formatVND(totalNhim)}</td><td>${formatVND(totalVoi)}</td></tr>
-            ${rows}
+            <tr class="tk-total-row"><td></td><td>${formatVND(totalNhim)}</td><td>${formatVND(totalVoi)}</td><td></td></tr>
+            ${bodyRows}
         </tbody>
-    </table>`;
+    </table></div>`;
 } // end function buildGiaoDucTable
 
 // [HUB] Bảng "Thống kê CON CỢP" — tổng các khoản Chi có cột F (GHI CHÚ 2) = "CON CỢP",

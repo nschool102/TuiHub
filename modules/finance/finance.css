@@ -426,6 +426,20 @@
     color: #39ff14;
     font-weight: bold;
 }
+/* [HUB] Dòng tổng (đầu bảng) của các bảng liệt kê giao dịch (Thu nhập/Tiền học/CON CỢP) */
+#module-finance .tk-compare-table tr.tk-total-row td {
+    background-color: var(--theme-color);
+    color: #111111;
+    font-weight: 800;
+    font-size: 0.95rem;
+}
+#module-finance .tk-detail-table td.tk-note-col {
+    text-align: left;
+    font-size: 0.78rem;
+    opacity: 0.75;
+    white-space: normal;
+    max-width: 160px;
+}
 
 /* ==========================================================================
    13. SCROLL TO TOP BUTTON
