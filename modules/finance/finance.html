@@ -32,6 +32,20 @@
                         <select id="chi-subtype" class="form-control"></select>
                     </div>
                 </div>
+                <!-- [HUB] Chỉ hiện khi Type = "Giáo dục" — ghi vào cột F (GHI CHÚ 2) -->
+                <div class="form-group" id="chi-giaoduc-target-group" style="display:none;">
+                    <label>Đối tượng</label>
+                    <select id="chi-giaoduc-target" class="form-control">
+                        <option value="NHÍM">NHÍM</option>
+                        <option value="VOI">VOI</option>
+                    </select>
+                </div>
+                <!-- [HUB] Đánh dấu khoản chi này CON CỢP đã trả cho sinh hoạt chung — ghi "CON CỢP"
+                     vào cột F (GHI CHÚ 2), ưu tiên hơn lựa chọn NHÍM/VOI nếu cả 2 cùng áp dụng. -->
+                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="chi-concop-checkbox" style="width:18px; height:18px;">
+                    <label for="chi-concop-checkbox" style="margin:0;">CON CỢP đã trả khoản này (cho sinh hoạt chung)</label>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
                     <div class="form-group">
                         <label>Số tiền (VND)</label>
@@ -256,7 +270,8 @@
 
     <!-- TAB THỐNG KÊ -->
     <div id="tab-thongke" class="tab-content">
-        <!-- [HUB] Section 5: Thống kê theo Tháng/Năm tự chọn -->
+
+        <!-- Card 1: Thống kê theo kỳ (bộ lọc) -->
         <div class="card">
             <h3>📊 Thống Kê Theo Kỳ</h3>
             <div class="form-group" style="display:flex; gap:10px;">
@@ -284,31 +299,56 @@
                 </div>
             </div>
             <button type="button" id="tk-submit-btn" class="btn" style="margin-top:10px; width:100%;">📊 Xem thống kê</button>
+        </div>
 
-            <div id="tk-period-label" style="text-align:center; font-size:12px; margin:12px 0; opacity:0.75;"></div>
-
-            <h4 style="margin:18px 0 8px;">Tỉ lệ Đóng góp</h4>
-            <div class="stat-row"><span style="color:#8BC34A; font-weight:bold;">Khác</span><strong id="tk-contrib-other">0</strong></div>
+        <!-- Card 2: Tỉ lệ Đóng góp -->
+        <div class="card">
+            <h4 id="tk-contrib-title" style="margin:0 0 10px;">Tỉ lệ Đóng góp</h4>
+            <div class="stat-row"><span style="color:#8BC34A; font-weight:bold;">MÌNH</span><strong id="tk-contrib-other">0</strong></div>
             <div class="stat-row"><span style="color:#E91E63; font-weight:bold;">CON CỢP</span><strong id="tk-contrib-tiger">0</strong></div>
             <div class="chart-container">
                 <canvas id="tk-chart-contribution"></canvas>
             </div>
 
-            <h4 style="margin:18px 0 8px;">Tỉ lệ Thu Chi</h4>
+            <h4 id="tk-income-table-title" style="margin:18px 0 8px;">Thu nhập</h4>
+            <div id="tk-income-table-wrap"></div>
+        </div>
+
+        <!-- Card 3: Tỉ lệ Thu Chi -->
+        <div class="card">
+            <h4 id="tk-thuchi-title" style="margin:0 0 10px;">Tỉ lệ Thu Chi</h4>
             <div class="stat-row"><span>Tổng Thu:</span><strong id="tk-thuchi-thu" style="color:var(--success-color);">0</strong></div>
             <div class="stat-row"><span>Tổng Chi:</span><strong id="tk-thuchi-chi" style="color:var(--danger-color);">0</strong></div>
             <div class="chart-container">
                 <canvas id="tk-chart-thuchi"></canvas>
             </div>
+        </div>
 
-            <h4 style="margin:18px 0 8px;">Các khoản Chi hàng tháng (cả năm <span id="tk-monthly-year-label"></span>)</h4>
+        <!-- Card 4: Các khoản Chi hàng tháng -->
+        <div class="card">
+            <h4 style="margin:0 0 8px;">Các khoản Chi hàng tháng (cả năm <span id="tk-monthly-year-label"></span>)</h4>
             <p style="font-size:11px; opacity:0.7; margin:0 0 8px;">Điện/Nước dò theo Ghi chú (dạng "T{tháng}.{năm}") vì là khoản trả sau; Ăn sáng/Đi chợ Siêu thị dò theo thời gian phát sinh. Biểu đồ luôn hiện đủ 12 tháng của năm đang chọn.</p>
             <div class="chart-container" style="height:280px;">
                 <canvas id="tk-chart-monthly"></canvas>
             </div>
+        </div>
 
-            <h4 style="margin:18px 0 8px;">So sánh Tháng trước vs Tháng này</h4>
+        <!-- Card 5: So sánh Tháng trước vs Tháng này (luôn theo tháng thực tế, không phụ thuộc bộ lọc) -->
+        <div class="card">
+            <h4 style="margin:0 0 10px;">So sánh Tháng trước vs Tháng này</h4>
             <div id="tk-comparison-results"></div>
+        </div>
+
+        <!-- Card 6: Thống kê Giáo dục (NHÍM/VOI) -->
+        <div class="card">
+            <h4 id="tk-giaoduc-title" style="margin:0 0 10px;">Tiền học</h4>
+            <div id="tk-giaoduc-table-wrap"></div>
+        </div>
+
+        <!-- Card 7: Thống kê CON CỢP đã trả cho sinh hoạt chung -->
+        <div class="card">
+            <h4 id="tk-concop-title" style="margin:0 0 10px;">Thống kê CON CỢP</h4>
+            <div id="tk-concop-table-wrap"></div>
         </div>
     </div>
     <!-- end TAB THỐNG KÊ -->

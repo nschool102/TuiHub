@@ -180,8 +180,12 @@ function requestNotificationPermission() {
 } // end function requestNotificationPermission
 
 function registerServiceWorker() {
+    // [HUB] Sửa đường dẫn cũ "/Tui/sw.js" (từ app Tui độc lập trước khi gộp) — giờ SW nằm ở
+    // gốc Hub. Trong thực tế shell.js đã tự đăng ký "./sw.js" từ lúc mở app rồi nên hàm này
+    // gần như luôn no-op (chỉ đăng ký lại đúng file, không hại gì), giữ lại cho an toàn vì
+    // requestNotificationPermission() vẫn gọi tới hàm này.
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/Tui/sw.js')
+        navigator.serviceWorker.register('./sw.js')
             .then(reg => {
                 console.log('Service Worker đăng ký thành công:', reg);
             })
@@ -636,6 +640,14 @@ function updateSubtypes(mode) {
             subtypeSelect.appendChild(opt);
         });
     }
+
+    // [HUB] Chi + Type = "Giáo dục" -> hiện thêm select Đối tượng (NHÍM/VOI), ghi vào cột F
+    if (mode === 'chi') {
+        const giaoDucGroup = document.getElementById('chi-giaoduc-target-group');
+        if (giaoDucGroup) {
+            giaoDucGroup.style.display = (selectedType === 'Giáo dục') ? 'block' : 'none';
+        }
+    }
 } // end function updateSubtypes
 
 function initFormOptions() {
@@ -732,7 +744,20 @@ function saveTransaction(event, mode) {
     const dateVal = document.getElementById(`${mode}-date`).value;
     const note = document.getElementById(`${mode}-note`).value;
 
-    console.log('📝 Dữ liệu nhập:', { type, subtype, amount, dateVal, note });
+    // [HUB] Cột F (GHI CHÚ 2): "CON CỢP" nếu tick checkbox (ưu tiên cao nhất, áp dụng mọi Type);
+    // nếu không tick và Type = "Giáo dục" thì ghi NHÍM/VOI từ select.
+    let note2 = '';
+    if (mode === 'chi') {
+        const conCopCheckbox = document.getElementById('chi-concop-checkbox');
+        if (conCopCheckbox && conCopCheckbox.checked) {
+            note2 = 'CON CỢP';
+        } else if (type === 'Giáo dục') {
+            const targetSelect = document.getElementById('chi-giaoduc-target');
+            if (targetSelect) note2 = targetSelect.value;
+        }
+    }
+
+    console.log('📝 Dữ liệu nhập:', { type, subtype, amount, dateVal, note, note2 });
 
     if (mode === 'chi') amount = -Math.abs(amount);
     if (mode === 'thu') amount = Math.abs(amount);
@@ -755,6 +780,7 @@ function saveTransaction(event, mode) {
         subtype: subtype,
         amount: amount,
         note: formattedNote,
+        note2: note2,
         synced: 0
     };
 
@@ -1079,10 +1105,10 @@ function computeMonthlyExpenseSeries(data, year) {
         const abs = Math.abs(t.amount);
 
         // Điện/Nước: dò theo Ghi chú "T{m}.{year}" (khoản trả sau)
-        if (t.subtype === 'Điện' || t.subtype === 'Nước') {
+        if (matchesCategory(t.subtype, 'Điện') || matchesCategory(t.subtype, 'Nước')) {
             const m = extractBillingMonthFromNote(t.note, year);
             if (m) {
-                if (t.subtype === 'Điện') dien[m - 1] += abs; else nuoc[m - 1] += abs;
+                if (matchesCategory(t.subtype, 'Điện')) dien[m - 1] += abs; else nuoc[m - 1] += abs;
             }
             return;
         }
@@ -1092,8 +1118,8 @@ function computeMonthlyExpenseSeries(data, year) {
         const ty = parseInt(t.timestamp.substring(0, 4), 10);
         const tm = parseInt(t.timestamp.substring(5, 7), 10);
         if (ty !== year) return;
-        if (t.subtype === 'Ăn sáng') anSang[tm - 1] += abs;
-        if (t.subtype === 'Đi chợ, Siêu thị') dicho[tm - 1] += abs;
+        if (matchesCategory(t.subtype, 'Ăn sáng')) anSang[tm - 1] += abs;
+        if (matchesCategory(t.subtype, 'Đi chợ, Siêu thị')) dicho[tm - 1] += abs;
     });
 
     return { dien, nuoc, anSang, dicho };
@@ -1204,6 +1230,21 @@ function renderChartsAndStats() {
     });
 } // end function renderChartsAndStats
 
+// [HUB] So khớp Type/Subtype không phân biệt hoa-thường & khoảng trắng thừa — dữ liệu thật
+// trong Sheet không luôn nhất quán casing (vd "Đi chợ, siêu thị" vs "Đi chợ, Siêu thị"),
+// so sánh "===" trực tiếp trước đây làm sót giao dịch, tính thiếu tiền trong biểu đồ/so sánh.
+function matchesCategory(value, target) {
+    return (value || '').toString().trim().toLowerCase() === target.toLowerCase();
+}
+
+// [HUB] Chuỗi tiêu đề theo kỳ đang chọn — 2 kiểu định dạng khác nhau tùy chỗ dùng.
+function tkPeriodSuffixDotted(month, year) {
+    return month === 0 ? `năm ${year}` : `T${month}.${year}`;
+}
+function tkPeriodTitleUpper(prefix, month, year) {
+    return month === 0 ? `${prefix} NĂM ${year}` : `${prefix} THÁNG ${month}/${year}`;
+}
+
 // =========================================================================
 // [HUB] SECTION 5: THỐNG KÊ THEO KỲ (chọn Tháng/Năm tự do) — theo yêu cầu mới
 // =========================================================================
@@ -1269,14 +1310,10 @@ function runThongKeTheoKy() {
 
     const month = parseInt(thangEl.value, 10) || 0; // 0 = None (cả năm)
     const year = parseInt(namEl.value, 10);
-
-    const labelEl = document.getElementById('tk-period-label');
-    if (labelEl) {
-        labelEl.textContent = month === 0 ? `Đang xem: Cả năm ${year}` : `Đang xem: Tháng ${month}/${year}`;
-    }
+    const suffix = tkPeriodSuffixDotted(month, year);
 
     getAllTransactions(data => {
-        // ---- b.i Donut "Tỉ lệ Đóng góp": CON CỢP vs Khác (trong các khoản Thu) ----
+        // ---- b.i Donut "Tỉ lệ Đóng góp": CON CỢP vs MÌNH (trong các khoản Thu) ----
         // ---- b.ii Donut "Tỉ lệ Thu Chi": Tổng Thu vs Tổng Chi ----
         let sumTiger = 0, sumOther = 0, totalThu = 0, totalChi = 0;
 
@@ -1286,19 +1323,29 @@ function runThongKeTheoKy() {
 
             if (amt > 0 && inPeriodByTime) {
                 totalThu += amt;
-                if (t.type === 'CON CỢP') sumTiger += amt; else sumOther += amt;
+                if (matchesCategory(t.type, 'CON CỢP')) sumTiger += amt; else sumOther += amt;
             } else if (amt < 0 && inPeriodByTime) {
                 totalChi += Math.abs(amt);
             }
         });
 
+        const contribTitleEl = document.getElementById('tk-contrib-title');
+        if (contribTitleEl) contribTitleEl.textContent = `Tỉ lệ Đóng góp ${suffix}`;
         document.getElementById('tk-contrib-other').textContent = formatVND(sumOther);
         document.getElementById('tk-contrib-tiger').textContent = formatVND(sumTiger);
-        renderDoughnutChart('tk-chart-contribution', ['Khác', 'CON CỢP'], [sumOther, sumTiger], ['#8BC34A', '#E91E63']);
+        renderDoughnutChart('tk-chart-contribution', ['MÌNH', 'CON CỢP'], [sumOther, sumTiger], ['#8BC34A', '#E91E63']);
 
+        const thuchiTitleEl = document.getElementById('tk-thuchi-title');
+        if (thuchiTitleEl) thuchiTitleEl.textContent = `Tỉ lệ Thu Chi ${suffix}`;
         document.getElementById('tk-thuchi-thu').textContent = formatVND(totalThu);
         document.getElementById('tk-thuchi-chi').textContent = formatVND(totalChi);
         renderDoughnutChart('tk-chart-thuchi', ['Tổng Thu', 'Tổng Chi'], [totalThu, totalChi], ['#4CAF50', '#F44336']);
+
+        // ---- Bảng chi tiết Thu nhập MÌNH vs CON CỢP theo Subtype ----
+        const incomeTitleEl = document.getElementById('tk-income-table-title');
+        if (incomeTitleEl) incomeTitleEl.textContent = tkPeriodTitleUpper('THU NHẬP', month, year);
+        const incomeWrap = document.getElementById('tk-income-table-wrap');
+        if (incomeWrap) incomeWrap.innerHTML = buildIncomeBreakdownTable(data, month, year);
 
         // ---- b.iii Bar "Các khoản Chi hàng tháng": xu hướng CẢ NĂM đang chọn ----
         const yearLabelEl = document.getElementById('tk-monthly-year-label');
@@ -1306,31 +1353,149 @@ function runThongKeTheoKy() {
         const series = computeMonthlyExpenseSeries(data, year);
         renderMonthlyExpenseTrendChart('tk-chart-monthly', year, series);
 
-        // ---- c. So sánh Tháng trước vs Tháng này (cảnh báo > 30%) ----
-        renderThongKeComparison(data, month, year);
+        // ---- c. So sánh Tháng trước vs Tháng này (luôn theo tháng THỰC TẾ, không phụ thuộc bộ lọc) ----
+        renderThongKeComparison(data);
+
+        // ---- Bảng Thống kê Giáo dục (NHÍM/VOI) theo Subtype ----
+        const giaoducTitleEl = document.getElementById('tk-giaoduc-title');
+        if (giaoducTitleEl) giaoducTitleEl.textContent = tkPeriodTitleUpper('TIỀN HỌC', month, year);
+        const giaoducWrap = document.getElementById('tk-giaoduc-table-wrap');
+        if (giaoducWrap) giaoducWrap.innerHTML = buildGiaoDucTable(data, month, year);
+
+        // ---- Bảng Thống kê CON CỢP (đã trả cho sinh hoạt chung) theo Subtype ----
+        const concopTitleEl = document.getElementById('tk-concop-title');
+        if (concopTitleEl) concopTitleEl.textContent = `Thống kê CON CỢP ${suffix}`;
+        const concopWrap = document.getElementById('tk-concop-table-wrap');
+        if (concopWrap) concopWrap.innerHTML = buildConCopExpenseTable(data, month, year);
     });
 } // end function runThongKeTheoKy
 
-function renderThongKeComparison(data, month, year) {
+// [HUB] Bảng "Thu nhập MÌNH vs CON CỢP" theo Subtype — Type = "CON CỢP" tính vào cột CON CỢP,
+// mọi Type khác (miễn số tiền dương = khoản Thu) tính vào cột MÌNH.
+function buildIncomeBreakdownTable(data, month, year) {
+    const subtypeMap = {};
+    data.forEach(t => {
+        if (t.amount <= 0 || !timestampInPeriod(t.timestamp, month, year)) return;
+        const sub = (t.subtype || '(Không có)').trim();
+        if (!subtypeMap[sub]) subtypeMap[sub] = { mine: 0, tiger: 0 };
+        if (matchesCategory(t.type, 'CON CỢP')) subtypeMap[sub].tiger += t.amount;
+        else subtypeMap[sub].mine += t.amount;
+    });
+
+    const subtypes = Object.keys(subtypeMap);
+    if (subtypes.length === 0) {
+        return '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu thu nhập trong kỳ này.</p>';
+    }
+
+    let totalMine = 0, totalTiger = 0;
+    subtypes.forEach(s => { totalMine += subtypeMap[s].mine; totalTiger += subtypeMap[s].tiger; });
+
+    const rows = subtypes.map(s => `
+        <tr>
+            <td>${s}</td>
+            <td>${subtypeMap[s].mine > 0 ? formatVND(subtypeMap[s].mine) : ''}</td>
+            <td>${subtypeMap[s].tiger > 0 ? formatVND(subtypeMap[s].tiger) : ''}</td>
+        </tr>`).join('');
+
+    return `<table class="tk-compare-table">
+        <thead><tr><th>SubType</th><th>MÌNH</th><th>CON CỢP</th></tr></thead>
+        <tbody>
+            <tr style="font-weight:bold;"><td></td><td>${formatVND(totalMine)}</td><td>${formatVND(totalTiger)}</td></tr>
+            ${rows}
+        </tbody>
+    </table>`;
+} // end function buildIncomeBreakdownTable
+
+// [HUB] Bảng "Tiền học" theo Subtype (Học phí/Học thêm/Quĩ lớp/Lệ phí), tách cột NHÍM/VOI
+// theo cột F (GHI CHÚ 2) của các giao dịch Chi có Type = "Giáo dục".
+function buildGiaoDucTable(data, month, year) {
+    const subtypeMap = {};
+    data.forEach(t => {
+        if (t.amount >= 0 || !matchesCategory(t.type, 'Giáo dục') || !timestampInPeriod(t.timestamp, month, year)) return;
+        const sub = (t.subtype || '(Không có)').trim();
+        if (!subtypeMap[sub]) subtypeMap[sub] = { nhim: 0, voi: 0 };
+        const target = (t.note2 || '').toString().trim().toUpperCase();
+        const abs = Math.abs(t.amount);
+        if (target === 'NHÍM') subtypeMap[sub].nhim += abs;
+        else if (target === 'VOI') subtypeMap[sub].voi += abs;
+    });
+
+    const subtypes = Object.keys(subtypeMap);
+    if (subtypes.length === 0) {
+        return '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu tiền học trong kỳ này.</p>';
+    }
+
+    let totalNhim = 0, totalVoi = 0;
+    subtypes.forEach(s => { totalNhim += subtypeMap[s].nhim; totalVoi += subtypeMap[s].voi; });
+
+    const rows = subtypes.map(s => `
+        <tr>
+            <td>${s}</td>
+            <td>${subtypeMap[s].nhim > 0 ? formatVND(subtypeMap[s].nhim) : ''}</td>
+            <td>${subtypeMap[s].voi > 0 ? formatVND(subtypeMap[s].voi) : ''}</td>
+        </tr>`).join('');
+
+    return `<table class="tk-compare-table">
+        <thead><tr><th>Detail</th><th>NHÍM</th><th>VOI</th></tr></thead>
+        <tbody>
+            <tr style="font-weight:bold;"><td></td><td>${formatVND(totalNhim)}</td><td>${formatVND(totalVoi)}</td></tr>
+            ${rows}
+        </tbody>
+    </table>`;
+} // end function buildGiaoDucTable
+
+// [HUB] Bảng "Thống kê CON CỢP" — tổng các khoản Chi có cột F (GHI CHÚ 2) = "CON CỢP",
+// group theo Subtype, kèm dòng tổng ở trên cùng.
+function buildConCopExpenseTable(data, month, year) {
+    const subtypeMap = {};
+    data.forEach(t => {
+        if (t.amount >= 0 || !timestampInPeriod(t.timestamp, month, year)) return;
+        const target = (t.note2 || '').toString().trim().toUpperCase();
+        if (target !== 'CON CỢP') return;
+        const sub = (t.subtype || '(Không có)').trim();
+        subtypeMap[sub] = (subtypeMap[sub] || 0) + Math.abs(t.amount);
+    });
+
+    const subtypes = Object.keys(subtypeMap);
+    if (subtypes.length === 0) {
+        return '<p style="opacity:0.7; font-size:12.5px;">Không có khoản chi nào được đánh dấu CON CỢP trong kỳ này.</p>';
+    }
+
+    let total = 0;
+    subtypes.forEach(s => { total += subtypeMap[s]; });
+
+    const rows = subtypes.map(s => `
+        <tr><td>${s}</td><td>${formatVND(subtypeMap[s])}</td></tr>`).join('');
+
+    return `<table class="tk-compare-table">
+        <thead><tr><th>Subtype</th><th>Số tiền</th></tr></thead>
+        <tbody>
+            <tr style="font-weight:bold;"><td></td><td>${formatVND(total)}</td></tr>
+            ${rows}
+        </tbody>
+    </table>`;
+} // end function buildConCopExpenseTable
+
+// [HUB] Luôn so sánh THÁNG THỰC TẾ hiện tại với tháng liền trước — KHÔNG phụ thuộc bộ lọc
+// Tháng/Năm phía trên (đó là bộ lọc cho các phần khác của trang, riêng phần này cố định).
+function renderThongKeComparison(data) {
     const container = document.getElementById('tk-comparison-results');
     if (!container) return;
 
-    if (month === 0) {
-        container.innerHTML = '<p style="opacity:0.7; font-size:12.5px;">Chọn 1 tháng cụ thể (khác "None") để xem so sánh với tháng trước.</p>';
-        return;
-    }
-
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
     let prevMonth = month - 1;
     let prevYear = year;
     if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
 
     // 5 hạng mục theo đúng yêu cầu — "Mua sắm & Cá nhân" là cả 1 Type (tổng mọi subtype con).
     const categories = [
-        { label: 'Điện', match: t => t.subtype === 'Điện', byNote: true },
-        { label: 'Nước', match: t => t.subtype === 'Nước', byNote: true },
-        { label: 'Ăn sáng', match: t => t.subtype === 'Ăn sáng', byNote: false },
-        { label: 'Đi chợ, Siêu thị', match: t => t.subtype === 'Đi chợ, Siêu thị', byNote: false },
-        { label: 'Mua sắm & Cá nhân', match: t => t.type === 'Mua sắm & Cá nhân', byNote: false }
+        { label: 'Điện', match: t => matchesCategory(t.subtype, 'Điện'), byNote: true },
+        { label: 'Nước', match: t => matchesCategory(t.subtype, 'Nước'), byNote: true },
+        { label: 'Ăn sáng', match: t => matchesCategory(t.subtype, 'Ăn sáng'), byNote: false },
+        { label: 'Đi chợ, Siêu thị', match: t => matchesCategory(t.subtype, 'Đi chợ, Siêu thị'), byNote: false },
+        { label: 'Mua sắm & Cá nhân', match: t => matchesCategory(t.type, 'Mua sắm & Cá nhân'), byNote: false }
     ];
 
     const rows = [];
@@ -1350,10 +1515,10 @@ function renderThongKeComparison(data, month, year) {
             }
         });
 
-        // [HUB] Bỏ qua hạng mục không có dữ liệu ở cả 2 tháng — không list tràn lan.
-        if (curSum === 0 && prevSum === 0) return;
+        // [HUB] Tháng này = 0đ thì bỏ qua hẳn — không liệt kê, không tính -100%.
+        if (curSum === 0) return;
 
-        const pctChange = prevSum > 0 ? ((curSum - prevSum) / prevSum * 100) : (curSum > 0 ? 100 : 0);
+        const pctChange = prevSum > 0 ? ((curSum - prevSum) / prevSum * 100) : 100;
         const isOver30 = prevSum > 0 && pctChange > 30;
         if (isOver30) hasAlert = true;
 
@@ -1361,7 +1526,7 @@ function renderThongKeComparison(data, month, year) {
     });
 
     if (rows.length === 0) {
-        container.innerHTML = '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu để so sánh trong 2 tháng này.</p>';
+        container.innerHTML = '<p style="opacity:0.7; font-size:12.5px;">Chưa có khoản chi nào trong tháng này để so sánh.</p>';
         return;
     }
 
@@ -1388,7 +1553,7 @@ function renderThongKeComparison(data, month, year) {
     container.innerHTML = alertHtml + `
         <table class="tk-compare-table">
             <thead>
-                <tr><th></th><th>Tháng này</th><th>Tháng trước</th><th>%</th></tr>
+                <tr><th></th><th>Tháng ${month}/${year}</th><th>Tháng ${prevMonth}/${prevYear}</th><th>%</th></tr>
             </thead>
             <tbody>${tableRows}</tbody>
         </table>`;

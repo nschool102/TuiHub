@@ -441,14 +441,15 @@ function saveTransactionAction(ss, params) {
   var subtype = params.subtype || "";
   var amount = parseFloat(params.amount) || 0;
   var note = params.note || "";
+  var note2 = params.note2 || ""; // [HUB] Cột F: GHI CHÚ 2 (vd NHÍM/VOI khi Type = "Giáo dục")
 
   // [HUB] Ghi kiểu Datetime thật (Date value) thay vì ép Plain Text
   var dateObj = toVietnamDateObject(timestampStr);
-  Logger.log("💾 Dữ liệu ghi: " + JSON.stringify({ dateObj: dateObj ? dateObj.toString() : null, type, subtype, amount, note }));
+  Logger.log("💾 Dữ liệu ghi: " + JSON.stringify({ dateObj: dateObj ? dateObj.toString() : null, type, subtype, amount, note, note2 }));
 
   var newRow = sheet.getLastRow() + 1;
   sheet.getRange(newRow, 1).setNumberFormat("dd-mm-yyyy hh:mm").setValue(dateObj || timestampStr);
-  sheet.getRange(newRow, 2, 1, 4).setValues([[type, subtype, amount, note]]);
+  sheet.getRange(newRow, 2, 1, 5).setValues([[type, subtype, amount, note, note2]]);
   
   Logger.log("✅ saveTransactionAction: Đã ghi thành công!");
   return { status: "success", message: "Đã ghi nhận giao dịch thành công!" };
@@ -479,6 +480,7 @@ function syncTransactionsAction(ss, params) {
       sheet.getRange(row, 3).setValue(tx.subtype || "");
       sheet.getRange(row, 4).setValue(parseFloat(tx.amount) || 0);
       sheet.getRange(row, 5).setValue(tx.note || "");
+      sheet.getRange(row, 6).setValue(tx.note2 || ""); // [HUB] Cột F: GHI CHÚ 2
       
       count++;
       Logger.log("✅ Đã ghi dòng " + row + ": " + tx.timestamp);
@@ -845,7 +847,8 @@ function readTransactionsSheetData(ss) {
       type: rows[i][1] || "",
       subtype: rows[i][2] || "",
       amount: parseFloat(rows[i][3]) || 0,
-      note: rows[i][4] || ""
+      note: rows[i][4] || "",
+      note2: rows[i][5] || "" // [HUB] Cột F: GHI CHÚ 2
     });
   }
   
