@@ -19,11 +19,11 @@ const CATEGORIES = {
     thu: {
         "Lương": ["Lương tháng", "Bổ sung lương", "Ứng lương", "Trực lễ tết", "Công tác phí", "Hoàn thuế"],
         "Thưởng": ["Bất thường", "Bổ sung thưởng", "Thưởng lễ tết", "Thưởng năm", "Thưởng quí"],
-        "Phụ cấp": ["Mĩ phẩm", "Vệ sinh viên"],
-        "Phúc lợi": ["HSG", "Phụ nữ", "Sinh nhật", "Thiếu nhi"],
+        "Phụ cấp": ["Mĩ phẩm", "Vệ sinh viên", "Quần áo"],
+        "Phúc lợi": ["HSG", "Phụ nữ", "Công đoàn", "Sinh nhật", "Thiếu nhi"],
         "Thu khác": ["Bảo hiểm refund"],
         "Bất thường": ["Tặng cho", "Trúng số"],
-        "CON CỢP": ["Lương tháng", "Bổ sung lương", "Bổ sung thưởng"]
+        "CON CỢP": ["Lương tháng", "Bổ sung lương", "Bổ sung thưởng", "Bóp cổ", "HSG", "Thiếu nhi"]
     },
     chi: {
         "Ăn uống": ["Ăn sáng", "Ăn trưa", "Ăn tối", "Đi chợ, Siêu thị", "Ăn vặt, Đồ ngọt"],
@@ -31,7 +31,7 @@ const CATEGORIES = {
         "Mua sắm & Cá nhân": ["Quần áo", "Phụ kiện", "Mĩ phẩm", "Đồ gia dụng", "Đồ chơi", "Sách, Văn phòng phẩm"],
         "Y tế & Sức khỏe": ["Khám, chữa bệnh", "Thuốc", "Thực phẩm chức năng"],
         "Giáo dục": ["Học phí", "Học thêm", "Quĩ lớp", "Lệ phí"],
-        "Giải trí": ["Coi phim", "Du lịch", "Quán cafe", "Nhà hàng"],
+        "Hưởng thụ": ["Coi phim", "Du lịch", "Quán cafe", "Nhà hàng"],
         "Đầu tư, tiết kiệm": ["Vàng", "Tiền mặt", "USDT", "Cho mượn"],
         "Chi khác & Giao tế": ["Từ thiện", "Biếu tặng"]
     }
@@ -891,7 +891,8 @@ function syncToGoogleSheets() {
                     type: t.type,
                     subtype: t.subtype,
                     amount: t.amount,
-                    note: t.note || ''
+                    note: t.note || '',
+                    note2: t.note2 || '' // [HUB] Bị sót trước đây — cột F (GHI CHÚ 2) không lên được Sheet
                 }))
             })
         })
@@ -2963,7 +2964,8 @@ function syncAllDataFromSheet() {
                         type: t.type,
                         subtype: t.subtype,
                         amount: t.amount,
-                        note: t.note
+                        note: t.note,
+                        note2: t.note2 || '' // [HUB] Bị sót trước đây — cột F (GHI CHÚ 2) không lên được Sheet
                     }))
                 })
             })
