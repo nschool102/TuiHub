@@ -465,14 +465,22 @@ function syncTransactionsAction(ss, params) {
   
   var transactions = params.data || [];
   var count = 0;
-  
-  var lastRow = sheet.getLastRow();
-  Logger.log("📊 Số dòng hiện tại: " + lastRow);
-  
+
+  var nextRow = sheet.getLastRow() + 1; // [HUB] Dùng bộ đếm chạy thực tế thay vì lastRow+index,
+                                          // vì index bao gồm cả các bản ghi bị bỏ qua (thiếu dữ
+                                          // liệu) — dùng index cũ sẽ để lại dòng trống xen giữa.
+
   transactions.forEach(function(tx, index) {
-    if (tx.timestamp && tx.type && tx.subtype && tx.amount !== undefined) {
-      var row = lastRow + index + 1;
-      
+    // [HUB] Kiểm tra chặt hơn: trim() để loại các giá trị chỉ có khoảng trắng (trước đây
+    // "" hoặc " " có thể lọt qua nếu tx.type/tx.subtype không phải là chuỗi rỗng thật sự).
+    var hasValidType = tx.type && String(tx.type).trim() !== "";
+    var hasValidSubtype = tx.subtype && String(tx.subtype).trim() !== "";
+    var hasValidAmount = tx.amount !== undefined && tx.amount !== null && tx.amount !== "";
+
+    if (tx.timestamp && hasValidType && hasValidSubtype && hasValidAmount) {
+      var row = nextRow;
+      nextRow++;
+
       // [HUB] Ghi kiểu Datetime thật thay vì ép Plain Text
       var txDateObj = toVietnamDateObject(tx.timestamp);
       sheet.getRange(row, 1).setNumberFormat("dd-mm-yyyy hh:mm").setValue(txDateObj || tx.timestamp || "");

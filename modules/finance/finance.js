@@ -19,7 +19,7 @@ const CATEGORIES = {
     thu: {
         "Lương": ["Lương tháng", "Bổ sung lương", "Ứng lương", "Trực lễ tết", "Công tác phí", "Hoàn thuế"],
         "Thưởng": ["Bất thường", "Bổ sung thưởng", "Thưởng lễ tết", "Thưởng năm", "Thưởng quí"],
-        "Phụ cấp": ["Mĩ phẩm", "Vệ sinh viên", "Quần áo"],
+        "Phụ cấp": ["Mĩ phẩm", "Vệ sinh viên", "Đồng phục"],
         "Phúc lợi": ["HSG", "Phụ nữ", "Công đoàn", "Sinh nhật", "Thiếu nhi"],
         "Thu khác": ["Bảo hiểm refund"],
         "Bất thường": ["Tặng cho", "Trúng số"],
