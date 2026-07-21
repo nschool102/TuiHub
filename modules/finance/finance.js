@@ -1371,30 +1371,49 @@ function runThongKeTheoKy() {
     });
 } // end function runThongKeTheoKy
 
-// [HUB] Bảng "Thu nhập MÌNH vs CON CỢP" — liệt kê TỪNG giao dịch (không gộp theo Subtype),
-// dòng đầu là tổng cột được tô nổi bật, mỗi dòng sau là 1 giao dịch kèm Ghi chú gốc.
+// [HUB] Bảng "Thu nhập MÌNH vs CON CỢP" — liệt kê TỪNG giao dịch, nhưng GỘP lại thành 1 dòng
+// nếu Subtype + Note trùng nhau (vd Lương tháng T6.2026 của MÌNH và CON CỢP hiện chung 1 hàng).
+// Màu chữ đồng nhất: MÌNH = xanh lá (#8BC34A), CON CỢP = hồng (#E91E63), khớp màu chart.
 function buildIncomeBreakdownTable(data, month, year) {
-    const rows = data.filter(t => t.amount > 0 && timestampInPeriod(t.timestamp, month, year))
+    const txs = data.filter(t => t.amount > 0 && timestampInPeriod(t.timestamp, month, year))
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    if (rows.length === 0) {
+    if (txs.length === 0) {
         return '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu thu nhập trong kỳ này.</p>';
     }
 
+    const grouped = [];
+    const keyToIndex = {};
     let totalMine = 0, totalTiger = 0;
-    const bodyRows = rows.map(t => {
+
+    txs.forEach(t => {
         const isTiger = matchesCategory(t.type, 'CON CỢP');
         if (isTiger) totalTiger += t.amount; else totalMine += t.amount;
-        return `<tr>
-            <td>${t.subtype || ''}</td>
-            <td>${!isTiger ? formatVND(t.amount) : ''}</td>
-            <td>${isTiger ? formatVND(t.amount) : ''}</td>
-            <td class="tk-note-col">${t.note || ''}</td>
-        </tr>`;
-    }).join('');
+
+        const key = (t.subtype || '') + '||' + (t.note || '');
+        if (keyToIndex.hasOwnProperty(key)) {
+            const g = grouped[keyToIndex[key]];
+            if (isTiger) g.tiger += t.amount; else g.mine += t.amount;
+        } else {
+            keyToIndex[key] = grouped.length;
+            grouped.push({
+                subtype: t.subtype || '',
+                mine: isTiger ? 0 : t.amount,
+                tiger: isTiger ? t.amount : 0,
+                note: t.note || ''
+            });
+        }
+    });
+
+    const bodyRows = grouped.map(g => `<tr>
+        <td>${g.subtype}</td>
+        <td class="tk-mine-col">${g.mine > 0 ? formatVND(g.mine) : ''}</td>
+        <td class="tk-tiger-col">${g.tiger > 0 ? formatVND(g.tiger) : ''}</td>
+        <td class="tk-note-col">${g.note}</td>
+    </tr>`).join('');
 
     return `<div style="overflow-x:auto;"><table class="tk-compare-table tk-detail-table">
-        <thead><tr><th>SUBTYPE</th><th>MÌNH</th><th>CON CỢP</th><th>NOTE</th></tr></thead>
+        <thead><tr><th>SUBTYPE</th><th class="tk-mine-col">MÌNH</th><th class="tk-tiger-col">CON CỢP</th><th>NOTE</th></tr></thead>
         <tbody>
             <tr class="tk-total-row"><td></td><td>${formatVND(totalMine)}</td><td>${formatVND(totalTiger)}</td><td></td></tr>
             ${bodyRows}

@@ -440,6 +440,21 @@
     white-space: normal;
     max-width: 160px;
 }
+/* [HUB] Màu chữ đồng nhất trong bảng Thu nhập: MÌNH = xanh lá, CON CỢP = hồng (khớp chart) */
+#module-finance .tk-detail-table th.tk-mine-col,
+#module-finance .tk-detail-table td.tk-mine-col {
+    color: #8BC34A;
+    font-weight: bold;
+}
+#module-finance .tk-detail-table th.tk-tiger-col,
+#module-finance .tk-detail-table td.tk-tiger-col {
+    color: #E91E63;
+    font-weight: bold;
+}
+#module-finance .tk-compare-table tr.tk-total-row td.tk-mine-col,
+#module-finance .tk-compare-table tr.tk-total-row td.tk-tiger-col {
+    color: #111111;
+}
 
 /* ==========================================================================
    13. SCROLL TO TOP BUTTON
