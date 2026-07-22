@@ -194,6 +194,7 @@ html, body {
 }
 .hub-btn.danger { background: #f44336; color: #fff; }
 .hub-btn.secondary { background: var(--hub-surface-2); color: var(--hub-text); border: 1px solid var(--hub-border); }
+.hub-btn:disabled { opacity: 0.6; cursor: wait; }
 
 @media (min-width: 860px) {
     #hub-bottomnav {

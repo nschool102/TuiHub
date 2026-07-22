@@ -75,13 +75,34 @@ function renderAppearanceControls() {
 // ---------- b. Đồng bộ dữ liệu ----------
 function wireSyncButton() {
     const btn = document.getElementById('settings-btn-sync');
+    const hiddenBtn = document.getElementById('btn-sync-data');
+
     if (btn) {
+        const originalText = btn.innerHTML;
         btn.addEventListener('click', () => {
+            // [HUB] Phản hồi ngay lúc bấm — trước đây nút Settings không đổi trạng thái gì
+            // (chỉ nút ẩn gốc bên trong module Gia đình được cập nhật), khiến người dùng
+            // tưởng app bị treo trong lúc chờ đồng bộ (vài giây qua mạng).
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Đang đồng bộ...';
+
             if (window.HubModules.finance && window.HubModules.finance.syncAllDataFromSheet) {
                 window.HubModules.finance.syncAllDataFromSheet();
             }
         });
+
+        // Nút gốc (ẩn) tự bật/tắt disabled khi đồng bộ xong — soi theo để khôi phục nút hiển thị.
+        if (hiddenBtn && window.MutationObserver) {
+            const btnObserver = new MutationObserver(() => {
+                if (!hiddenBtn.disabled && btn.disabled) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            });
+            btnObserver.observe(hiddenBtn, { attributes: true, attributeFilter: ['disabled'] });
+        }
     }
+
     // "sync-status" gốc nằm ẩn trong module Gia đình — soi thay đổi rồi phản chiếu
     // sang khung hiển thị của Settings bằng MutationObserver (không cần sửa script.js gốc).
     const originalStatus = document.getElementById('sync-status');

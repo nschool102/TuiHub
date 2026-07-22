@@ -3260,10 +3260,20 @@ function resetAppCompletely() {
             return;
         }
 
+        // [HUB] Cho người dùng biết lệnh đang chạy trong lúc chờ xác thực (fetch có thể mất
+        // vài giây, trước đây nút không có phản ứng gì khiến người dùng tưởng bị treo).
+        const confirmBtn = document.getElementById("btn-confirm-reset");
+        const cancelBtn = document.getElementById("btn-cancel-reset");
+        const originalConfirmText = confirmBtn.innerHTML;
+        confirmBtn.disabled = true;
+        cancelBtn.disabled = true;
+        confirmBtn.innerHTML = "⏳ Đang xác thực...";
+
         fetch(`${CONFIG.apiEndpoint}?action=checkResetPassword&password=${encodeURIComponent(passVal.trim())}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status === "success" && res.match === true) {
+                    confirmBtn.innerHTML = "⏳ Đang xóa dữ liệu...";
                     mask.remove();
                     localStorage.clear();
                     if (window.indexedDB) {
@@ -3275,10 +3285,16 @@ function resetAppCompletely() {
                     alert("🗑️ Đã xóa sạch dữ liệu thiết bị và đặt lại ứng dụng thành công!");
                     window.location.reload(true);
                 } else {
+                    confirmBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    confirmBtn.innerHTML = originalConfirmText;
                     alert("❌ Mật khẩu xác nhận không chính xác!");
                 }
             })
             .catch(() => {
+                confirmBtn.disabled = false;
+                cancelBtn.disabled = false;
+                confirmBtn.innerHTML = originalConfirmText;
                 alert("Lỗi kết nối đến máy chủ xác thực!");
             });
     };
