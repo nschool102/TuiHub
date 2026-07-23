@@ -1363,6 +1363,12 @@ function runThongKeTheoKy() {
         const giaoducWrap = document.getElementById('tk-giaoduc-table-wrap');
         if (giaoducWrap) giaoducWrap.innerHTML = buildGiaoDucTable(data, month, year);
 
+        // ---- Bảng Thống kê Chi cho con cái (mọi Type, chỉ lọc theo GHI CHÚ 2 = NHÍM/VOI) ----
+        const kidsTitleEl = document.getElementById('tk-kids-title');
+        if (kidsTitleEl) kidsTitleEl.textContent = tkPeriodTitleUpper('CHI CHO CON CÁI', month, year);
+        const kidsWrap = document.getElementById('tk-kids-table-wrap');
+        if (kidsWrap) kidsWrap.innerHTML = buildKidsExpenseTable(data, month, year);
+
         // ---- Bảng Thống kê CON CỢP (đã trả cho sinh hoạt chung) theo Subtype ----
         const concopTitleEl = document.getElementById('tk-concop-title');
         if (concopTitleEl) concopTitleEl.textContent = `Thống kê CON CỢP ${suffix}`;
@@ -1455,6 +1461,44 @@ function buildGiaoDucTable(data, month, year) {
         </tbody>
     </table></div>`;
 } // end function buildGiaoDucTable
+
+// [HUB] Bảng "Thống kê Chi cho con cái" — GIỐNG bảng Tiền học nhưng KHÔNG giới hạn Type =
+// "Giáo dục" nữa, lấy MỌI khoản Chi (mọi Type/Subtype) miễn Ghi chú 2 (cột F) = NHÍM hoặc VOI.
+function buildKidsExpenseTable(data, month, year) {
+    const rows = data.filter(t => {
+        if (t.amount >= 0 || !timestampInPeriod(t.timestamp, month, year)) return false;
+        const target = (t.note2 || '').toString().trim().toUpperCase();
+        return target === 'NHÍM' || target === 'VOI';
+    }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    if (rows.length === 0) {
+        return '<p style="opacity:0.7; font-size:12.5px;">Không có khoản chi nào cho NHÍM/VOI trong kỳ này.</p>';
+    }
+
+    let totalNhim = 0, totalVoi = 0;
+    const bodyRows = rows.map(t => {
+        const target = (t.note2 || '').toString().trim().toUpperCase();
+        const abs = Math.abs(t.amount);
+        const isNhim = target === 'NHÍM';
+        const isVoi = target === 'VOI';
+        if (isNhim) totalNhim += abs;
+        if (isVoi) totalVoi += abs;
+        return `<tr>
+            <td>${t.subtype || ''}</td>
+            <td>${isNhim ? formatVND(abs) : ''}</td>
+            <td>${isVoi ? formatVND(abs) : ''}</td>
+            <td class="tk-note-col">${t.note || ''}</td>
+        </tr>`;
+    }).join('');
+
+    return `<div style="overflow-x:auto;"><table class="tk-compare-table tk-detail-table">
+        <thead><tr><th>SUBTYPE</th><th>NHÍM</th><th>VOI</th><th>NOTE</th></tr></thead>
+        <tbody>
+            <tr class="tk-total-row"><td></td><td>${formatVND(totalNhim)}</td><td>${formatVND(totalVoi)}</td><td></td></tr>
+            ${bodyRows}
+        </tbody>
+    </table></div>`;
+} // end function buildKidsExpenseTable
 
 // [HUB] Bảng "Thống kê CON CỢP" — tổng các khoản Chi có cột F (GHI CHÚ 2) = "CON CỢP",
 // group theo Subtype, kèm dòng tổng ở trên cùng.
