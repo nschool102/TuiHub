@@ -14,6 +14,7 @@ const HUB_NAV = [
             { key: 'thu', label: 'Thu' },
             { key: 'diary', label: 'Nhật kí' },
             { key: 'thongke', label: 'Thống kê' },
+            { key: 'concai', label: 'Con cái' },
             { key: 'family', label: 'Family' },
             { key: 'nhachen', label: 'Nhắc hẹn' }
         ]

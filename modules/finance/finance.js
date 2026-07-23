@@ -593,6 +593,9 @@ function switchTab(tabName) {
     if (tabName === 'thongke') {
         runThongKeTheoKy(); // [HUB] Section 5: render lại với bộ lọc hiện tại mỗi lần mở tab
     }
+    if (tabName === 'concai') {
+        runConCaiTheoKy(); // [HUB] Tab Con cái: render lại với bộ lọc hiện tại mỗi lần mở tab
+    }
     if (tabName === 'family') {
         checkFamilyTabAccess();
     }
@@ -1363,12 +1366,6 @@ function runThongKeTheoKy() {
         const giaoducWrap = document.getElementById('tk-giaoduc-table-wrap');
         if (giaoducWrap) giaoducWrap.innerHTML = buildGiaoDucTable(data, month, year);
 
-        // ---- Bảng Thống kê Chi cho con cái (mọi Type, chỉ lọc theo GHI CHÚ 2 = NHÍM/VOI) ----
-        const kidsTitleEl = document.getElementById('tk-kids-title');
-        if (kidsTitleEl) kidsTitleEl.textContent = tkPeriodTitleUpper('CHI CHO CON CÁI', month, year);
-        const kidsWrap = document.getElementById('tk-kids-table-wrap');
-        if (kidsWrap) kidsWrap.innerHTML = buildKidsExpenseTable(data, month, year);
-
         // ---- Bảng Thống kê CON CỢP (đã trả cho sinh hoạt chung) theo Subtype ----
         const concopTitleEl = document.getElementById('tk-concop-title');
         if (concopTitleEl) concopTitleEl.textContent = `Thống kê CON CỢP ${suffix}`;
@@ -1499,6 +1496,42 @@ function buildKidsExpenseTable(data, month, year) {
         </tbody>
     </table></div>`;
 } // end function buildKidsExpenseTable
+
+// [HUB] TAB CON CÁI (độc lập, tách khỏi Thống kê) — bộ lọc + render riêng.
+function initConCaiFilters() {
+    const namSelect = document.getElementById('cc-nam');
+    const thangSelect = document.getElementById('cc-thang');
+    if (!namSelect || !thangSelect) return;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const years = [currentYear - 2, currentYear - 1, currentYear];
+    namSelect.innerHTML = years.map(y =>
+        `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`
+    ).join('');
+    thangSelect.value = String(currentMonth);
+
+    const btn = document.getElementById('cc-submit-btn');
+    if (btn) btn.addEventListener('click', runConCaiTheoKy);
+} // end function initConCaiFilters
+
+function runConCaiTheoKy() {
+    const thangEl = document.getElementById('cc-thang');
+    const namEl = document.getElementById('cc-nam');
+    if (!thangEl || !namEl || !namEl.value) return;
+
+    const month = parseInt(thangEl.value, 10) || 0; // 0 = None (cả năm)
+    const year = parseInt(namEl.value, 10);
+
+    getAllTransactions(data => {
+        const titleEl = document.getElementById('cc-kids-title');
+        if (titleEl) titleEl.textContent = tkPeriodTitleUpper('CHI CHO CON CÁI', month, year);
+        const wrap = document.getElementById('cc-kids-table-wrap');
+        if (wrap) wrap.innerHTML = buildKidsExpenseTable(data, month, year);
+    });
+} // end function runConCaiTheoKy
 
 // [HUB] Bảng "Thống kê CON CỢP" — tổng các khoản Chi có cột F (GHI CHÚ 2) = "CON CỢP",
 // group theo Subtype, kèm dòng tổng ở trên cùng.
@@ -3537,6 +3570,7 @@ function financeModuleInit() {
     setupEventListeners();
     initDB();
     initThongKeFilters(); // [HUB] Section 5: gắn 1 lần duy nhất, không phụ thuộc IndexedDB
+    initConCaiFilters();  // [HUB] Tab Con cái: gắn 1 lần duy nhất
 }
 
 window.addEventListener('online', () => {
