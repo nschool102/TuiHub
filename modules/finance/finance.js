@@ -1530,8 +1530,82 @@ function runConCaiTheoKy() {
         if (titleEl) titleEl.textContent = tkPeriodTitleUpper('CHI CHO CON CÁI', month, year);
         const wrap = document.getElementById('cc-kids-table-wrap');
         if (wrap) wrap.innerHTML = buildKidsExpenseTable(data, month, year);
+
+        // [HUB] Chart so sánh 5 hạng mục: Giáo dục NHÍM/VOI, Khác NHÍM/VOI, MÌNH
+        const breakdown = computeKidsCategoryBreakdown(data, month, year);
+        renderKidsBreakdownChart('cc-chart-breakdown', breakdown);
     });
 } // end function runConCaiTheoKy
+
+// [HUB] Gom theo 5 hạng mục: Giáo dục NHÍM, Giáo dục VOI, Khác (ngoài giáo dục) NHÍM,
+// Khác (ngoài giáo dục) VOI, MÌNH (ghi chú 2 = "MÌNH", nếu có nhập).
+function computeKidsCategoryBreakdown(data, month, year) {
+    let eduNhim = 0, eduVoi = 0, otherNhim = 0, otherVoi = 0, mine = 0;
+
+    data.forEach(t => {
+        if (t.amount >= 0 || !timestampInPeriod(t.timestamp, month, year)) return;
+        const target = (t.note2 || '').toString().trim().toUpperCase();
+        if (target !== 'NHÍM' && target !== 'VOI' && target !== 'MÌNH') return;
+
+        const abs = Math.abs(t.amount);
+        const isEdu = matchesCategory(t.type, 'Giáo dục');
+
+        if (target === 'NHÍM') {
+            if (isEdu) eduNhim += abs; else otherNhim += abs;
+        } else if (target === 'VOI') {
+            if (isEdu) eduVoi += abs; else otherVoi += abs;
+        } else if (target === 'MÌNH') {
+            mine += abs;
+        }
+    });
+
+    return { eduNhim, eduVoi, otherNhim, otherVoi, mine };
+} // end function computeKidsCategoryBreakdown
+
+function renderKidsBreakdownChart(canvasId, b) {
+    if (charts[canvasId]) {
+        charts[canvasId].destroy();
+        delete charts[canvasId];
+    }
+
+    const canvasEl = document.getElementById(canvasId);
+    if (!canvasEl) return;
+
+    const ctx = canvasEl.getContext('2d');
+    const labels = ['Giáo dục NHÍM', 'Giáo dục VOI', 'Khác NHÍM', 'Khác VOI', 'MÌNH'];
+    const values = [b.eduNhim, b.eduVoi, b.otherNhim, b.otherVoi, b.mine];
+    const colors = ['#2196F3', '#FF9800', '#4CAF50', '#E91E63', '#9C27B0'];
+
+    charts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Số tiền',
+                data: values,
+                backgroundColor: colors,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return formatVND(ctx.raw); }
+                    }
+                }
+            },
+            scales: {
+                x: { beginAtZero: true, ticks: { font: { size: 9 } } },
+                y: { ticks: { font: { size: 11 } } }
+            }
+        }
+    });
+} // end function renderKidsBreakdownChart
 
 // [HUB] Bảng "Thống kê CON CỢP" — tổng các khoản Chi có cột F (GHI CHÚ 2) = "CON CỢP",
 // group theo Subtype, kèm dòng tổng ở trên cùng.

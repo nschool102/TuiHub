@@ -972,14 +972,14 @@ function readFamilySheetData(ss) {
       dienthoai: rows[i][5] || "-",
       cccd: {
         so: rows[i][6] || "-",
-        ngaycap: rows[i][7] || "-",
-        ngayhethan: rows[i][8] || "-",
+        ngaycap: formatDate(rows[i][7]),
+        ngayhethan: formatDate(rows[i][8]),
         noicap: rows[i][9] || "-"
       },
       hochieu: {
         so: rows[i][10] || "-",
-        ngaycap: rows[i][11] || "-",
-        ngayhethan: rows[i][12] || "-",
+        ngaycap: formatDate(rows[i][11]),
+        ngayhethan: formatDate(rows[i][12]),
         noicap: rows[i][13] || "-"
       },
       bhyt: rows[i][14] || "-",
