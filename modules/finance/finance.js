@@ -493,6 +493,27 @@ function setupEventListeners() {
     document.getElementById("thu-amount").addEventListener("input", (e) => formatCurrency(e.target));
 
     document.getElementById("chi-top-period").addEventListener("change", () => renderTopExpenses());
+
+    // [HUB] CON CỢP / MÌNH loại trừ lẫn nhau — tick 1 ô thì tự bỏ tick ô kia.
+    const conCopCb = document.getElementById("chi-concop-checkbox");
+    const minhCb = document.getElementById("chi-minh-checkbox");
+    if (conCopCb && minhCb) {
+        conCopCb.addEventListener("change", () => { if (conCopCb.checked) minhCb.checked = false; });
+        minhCb.addEventListener("change", () => { if (minhCb.checked) conCopCb.checked = false; });
+    }
+
+    // [HUB] Health Check: tự động focus sang ô Nhịp tim ngay khi nhập xong Huyết áp
+    // (dạng ###/## hoặc ###/###) — đỡ phải bấm chuột/chạm sang ô kế tiếp.
+    const bpInput = document.getElementById("diary-blood-pressure");
+    const hrInput = document.getElementById("diary-heart-rate");
+    if (bpInput && hrInput) {
+        bpInput.addEventListener("input", () => {
+            if (/^\d{2,3}\/\d{2,3}$/.test(bpInput.value.trim())) {
+                hrInput.focus();
+            }
+        });
+    }
+
     // [HUB] "sec4-period" đã bị xóa cùng Section 4 (gộp vào Section 5) — gỡ listener tương ứng.
 
     document.getElementById("rem-frequency").addEventListener("change", toggleCustomReminderFields);
@@ -747,13 +768,17 @@ function saveTransaction(event, mode) {
     const dateVal = document.getElementById(`${mode}-date`).value;
     const note = document.getElementById(`${mode}-note`).value;
 
-    // [HUB] Cột F (GHI CHÚ 2): "CON CỢP" nếu tick checkbox (ưu tiên cao nhất, áp dụng mọi Type);
-    // nếu không tick và Type = "Giáo dục" thì ghi NHÍM/VOI từ select.
+    // [HUB] Cột F (GHI CHÚ 2): "CON CỢP" hoặc "MÌNH" nếu tick 1 trong 2 checkbox (ưu tiên cao
+    // nhất, áp dụng mọi Type, 2 ô loại trừ lẫn nhau); nếu không tick ô nào và Type = "Giáo dục"
+    // thì ghi NHÍM/VOI từ select.
     let note2 = '';
     if (mode === 'chi') {
         const conCopCheckbox = document.getElementById('chi-concop-checkbox');
+        const minhCheckbox = document.getElementById('chi-minh-checkbox');
         if (conCopCheckbox && conCopCheckbox.checked) {
             note2 = 'CON CỢP';
+        } else if (minhCheckbox && minhCheckbox.checked) {
+            note2 = 'MÌNH';
         } else if (type === 'Giáo dục') {
             const targetSelect = document.getElementById('chi-giaoduc-target');
             if (targetSelect) note2 = targetSelect.value;
@@ -1238,7 +1263,7 @@ function renderChartsAndStats() {
 // trong Sheet không luôn nhất quán casing (vd "Đi chợ, siêu thị" vs "Đi chợ, Siêu thị"),
 // so sánh "===" trực tiếp trước đây làm sót giao dịch, tính thiếu tiền trong biểu đồ/so sánh.
 function matchesCategory(value, target) {
-    return (value || '').toString().trim().toLowerCase() === target.toLowerCase();
+    return (value || '').toString().trim().toLowerCase().normalize('NFC') === target.toLowerCase().normalize('NFC');
 }
 
 // [HUB] Chuỗi tiêu đề theo kỳ đang chọn — 2 kiểu định dạng khác nhau tùy chỗ dùng.
@@ -1436,9 +1461,9 @@ function buildGiaoDucTable(data, month, year) {
 
     let totalNhim = 0, totalVoi = 0;
     const bodyRows = rows.map(t => {
-        const target = (t.note2 || '').toString().trim().toUpperCase();
+        const target = (t.note2 || '').toString().trim().toUpperCase().normalize('NFC'); // [HUB] normalize để tránh lệch chuẩn hoá Unicode dấu tiếng Việt (vd MÌNH/NHÍM)
         const abs = Math.abs(t.amount);
-        const isNhim = target === 'NHÍM';
+        const isNhim = target === 'NHÍM'.normalize('NFC');
         const isVoi = target === 'VOI';
         if (isNhim) totalNhim += abs;
         if (isVoi) totalVoi += abs;
@@ -1464,8 +1489,8 @@ function buildGiaoDucTable(data, month, year) {
 function buildKidsExpenseTable(data, month, year) {
     const rows = data.filter(t => {
         if (t.amount >= 0 || !timestampInPeriod(t.timestamp, month, year)) return false;
-        const target = (t.note2 || '').toString().trim().toUpperCase();
-        return target === 'NHÍM' || target === 'VOI';
+        const target = (t.note2 || '').toString().trim().toUpperCase().normalize('NFC'); // [HUB] normalize để tránh lệch chuẩn hoá Unicode dấu tiếng Việt (vd MÌNH/NHÍM)
+        return target === 'NHÍM'.normalize('NFC') || target === 'VOI';
     }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     if (rows.length === 0) {
@@ -1474,9 +1499,9 @@ function buildKidsExpenseTable(data, month, year) {
 
     let totalNhim = 0, totalVoi = 0;
     const bodyRows = rows.map(t => {
-        const target = (t.note2 || '').toString().trim().toUpperCase();
+        const target = (t.note2 || '').toString().trim().toUpperCase().normalize('NFC'); // [HUB] normalize để tránh lệch chuẩn hoá Unicode dấu tiếng Việt (vd MÌNH/NHÍM)
         const abs = Math.abs(t.amount);
-        const isNhim = target === 'NHÍM';
+        const isNhim = target === 'NHÍM'.normalize('NFC');
         const isVoi = target === 'VOI';
         if (isNhim) totalNhim += abs;
         if (isVoi) totalVoi += abs;
@@ -1532,10 +1557,18 @@ function runConCaiTheoKy() {
         if (wrap) wrap.innerHTML = buildKidsExpenseTable(data, month, year);
 
         // [HUB] Chart so sánh 5 hạng mục: Giáo dục NHÍM/VOI, Khác NHÍM/VOI, MÌNH
+        const breakdownTitleEl = document.getElementById('cc-breakdown-title');
+        if (breakdownTitleEl) breakdownTitleEl.textContent = ccBreakdownTitle(month, year);
         const breakdown = computeKidsCategoryBreakdown(data, month, year);
         renderKidsBreakdownChart('cc-chart-breakdown', breakdown);
+        renderKidsBreakdownLegend('cc-breakdown-legend', breakdown);
     });
 } // end function runConCaiTheoKy
+
+// [HUB] "So sánh chi tiêu tháng X/Y" nếu có chọn tháng cụ thể, "So sánh chi tiêu năm Y" nếu chọn None.
+function ccBreakdownTitle(month, year) {
+    return month === 0 ? `So sánh chi tiêu năm ${year}` : `So sánh chi tiêu tháng ${month}/${year}`;
+} // end function ccBreakdownTitle
 
 // [HUB] Gom theo 5 hạng mục: Giáo dục NHÍM, Giáo dục VOI, Khác (ngoài giáo dục) NHÍM,
 // Khác (ngoài giáo dục) VOI, MÌNH (ghi chú 2 = "MÌNH", nếu có nhập).
@@ -1544,17 +1577,17 @@ function computeKidsCategoryBreakdown(data, month, year) {
 
     data.forEach(t => {
         if (t.amount >= 0 || !timestampInPeriod(t.timestamp, month, year)) return;
-        const target = (t.note2 || '').toString().trim().toUpperCase();
-        if (target !== 'NHÍM' && target !== 'VOI' && target !== 'MÌNH') return;
+        const target = (t.note2 || '').toString().trim().toUpperCase().normalize('NFC'); // [HUB] normalize để tránh lệch chuẩn hoá Unicode dấu tiếng Việt (vd MÌNH/NHÍM)
+        if (target !== 'NHÍM'.normalize('NFC') && target !== 'VOI' && target !== 'MÌNH'.normalize('NFC')) return;
 
         const abs = Math.abs(t.amount);
         const isEdu = matchesCategory(t.type, 'Giáo dục');
 
-        if (target === 'NHÍM') {
+        if (target === 'NHÍM'.normalize('NFC')) {
             if (isEdu) eduNhim += abs; else otherNhim += abs;
         } else if (target === 'VOI') {
             if (isEdu) eduVoi += abs; else otherVoi += abs;
-        } else if (target === 'MÌNH') {
+        } else if (target === 'MÌNH'.normalize('NFC')) {
             mine += abs;
         }
     });
@@ -1607,14 +1640,35 @@ function renderKidsBreakdownChart(canvasId, b) {
     });
 } // end function renderKidsBreakdownChart
 
+// [HUB] Danh sách số tiền phía dưới chart, màu chữ khớp đúng màu cột tương ứng.
+function renderKidsBreakdownLegend(containerId, b) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const items = [
+        { label: 'Giáo dục NHÍM', value: b.eduNhim, color: '#2196F3' },
+        { label: 'Giáo dục VOI', value: b.eduVoi, color: '#FF9800' },
+        { label: 'Khác NHÍM', value: b.otherNhim, color: '#4CAF50' },
+        { label: 'Khác VOI', value: b.otherVoi, color: '#E91E63' },
+        { label: 'MÌNH', value: b.mine, color: '#9C27B0' }
+    ];
+
+    container.innerHTML = items.map(item => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color);">
+            <span style="color:${item.color}; font-weight:600;">${item.label}</span>
+            <strong style="color:${item.color};">${formatVND(item.value)}</strong>
+        </div>
+    `).join('');
+} // end function renderKidsBreakdownLegend
+
 // [HUB] Bảng "Thống kê CON CỢP" — tổng các khoản Chi có cột F (GHI CHÚ 2) = "CON CỢP",
 // group theo Subtype, kèm dòng tổng ở trên cùng.
 function buildConCopExpenseTable(data, month, year) {
     const subtypeMap = {};
     data.forEach(t => {
         if (t.amount >= 0 || !timestampInPeriod(t.timestamp, month, year)) return;
-        const target = (t.note2 || '').toString().trim().toUpperCase();
-        if (target !== 'CON CỢP') return;
+        const target = (t.note2 || '').toString().trim().toUpperCase().normalize('NFC'); // [HUB] normalize để tránh lệch chuẩn hoá Unicode dấu tiếng Việt (vd MÌNH/NHÍM)
+        if (target !== 'CON CỢP'.normalize('NFC')) return;
         const sub = (t.subtype || '(Không có)').trim();
         subtypeMap[sub] = (subtypeMap[sub] || 0) + Math.abs(t.amount);
     });
@@ -3678,13 +3732,12 @@ function closeStatTimeModal() {
 
 // Render thống kê thời gian
 function renderStatTime() {
-    const periodSelect = document.getElementById('stat-time-period');
-    if (!periodSelect) return;
-    
-    const period = periodSelect.value;
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const thangSelect = document.getElementById('stat-thang');
+    const namSelect = document.getElementById('stat-nam');
+    if (!thangSelect || !namSelect || !namSelect.value) return;
+
+    const month = parseInt(thangSelect.value, 10) || 0; // 0 = None (cả năm)
+    const year = parseInt(namSelect.value, 10);
     
     if (!db) {
         console.log('❌ renderStatTime: Chưa có database');
@@ -3709,16 +3762,13 @@ function renderStatTime() {
             if (dateParts.length !== 3) return false;
             
             const day = parseInt(dateParts[0]);
-            const month = parseInt(dateParts[1]) - 1;
-            const year = parseInt(dateParts[2]);
+            const entryMonth = parseInt(dateParts[1]);
+            const entryYear = parseInt(dateParts[2]);
             
-            if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+            if (isNaN(day) || isNaN(entryMonth) || isNaN(entryYear)) return false;
             
-            if (period === 'month') {
-                return month === currentMonth && year === currentYear;
-            } else if (period === 'year') {
-                return year === currentYear;
-            }
+            if (entryYear !== year) return false;
+            if (month !== 0 && entryMonth !== month) return false;
             return true;
         });
         
@@ -3790,6 +3840,8 @@ function renderStatBarChart(canvasId, data) {
         }
     });
     
+    // [HUB] Đổi sang bar chart NGANG, cùng định dạng với "So sánh chi tiêu" ở tab Con cái —
+    // bỏ datalabels nổi trên cột (dễ bị cắt chữ khi cột dài), thay bằng list số liệu bên dưới.
     charts[canvasId] = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -3798,47 +3850,48 @@ function renderStatBarChart(canvasId, data) {
                 label: 'Số ngày',
                 data: values,
                 backgroundColor: colors,
-                borderColor: colors.map(c => c),
-                borderWidth: 1
+                borderRadius: 6
             }]
         },
         options: {
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
-                datalabels: {
-                    color: '#ffffff',
-                    font: { weight: 'bold', size: 10 },
-                    anchor: 'end',
-                    align: 'end',
-                    formatter: function(value) {
-                        return value > 0 ? value : '';
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.raw + ' ngày'; }
                     }
                 }
             },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        font: { size: 10 }
-                    }
-                },
-                x: {
-                    ticks: {
-                        font: { size: 9 },
-                        maxRotation: 30,
-                        minRotation: 30
-                    }
-                }
+                x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 } } },
+                y: { ticks: { font: { size: 11 } } }
             }
-        },
-        plugins: [ChartDataLabels]
+        }
     });
+
+    renderStatBarLegend('chart-stat-bar-legend', labels, values, colors);
 } // end function renderStatBarChart
+
+// [HUB] Danh sách số ngày phía dưới chart, màu chữ khớp màu cột tương ứng.
+function renderStatBarLegend(containerId, labels, values, colors) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (labels.length === 0) {
+        container.innerHTML = '<p style="opacity:0.7; font-size:12.5px;">Không có dữ liệu trong kỳ này.</p>';
+        return;
+    }
+
+    container.innerHTML = labels.map((label, i) => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color);">
+            <span style="color:${colors[i]}; font-weight:600;">${label}</span>
+            <strong style="color:${colors[i]};">${values[i]} ngày</strong>
+        </div>
+    `).join('');
+} // end function renderStatBarLegend
 
 // Vẽ biểu đồ tròn cho modal thống kê
 function renderStatPieChart(canvasId, nhaMinh, nhaMe, noiKhac) {
@@ -3913,10 +3966,18 @@ function setupStatTimeEvents() {
         });
     }
     
-    const periodSelect = document.getElementById('stat-time-period');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', renderStatTime);
+    // [HUB] Đổ options Năm (3 năm gần nhất) + gắn sự kiện cho cả 2 select Tháng/Năm
+    const thangSelect = document.getElementById('stat-thang');
+    const namSelect = document.getElementById('stat-nam');
+    if (namSelect) {
+        const currentYear = new Date().getFullYear();
+        const years = [currentYear - 2, currentYear - 1, currentYear];
+        namSelect.innerHTML = years.map(y =>
+            `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`
+        ).join('');
     }
+    if (thangSelect) thangSelect.addEventListener('change', renderStatTime);
+    if (namSelect) namSelect.addEventListener('change', renderStatTime);
     
     const btnRefresh = document.getElementById('btn-refresh-stat');
     if (btnRefresh) {
