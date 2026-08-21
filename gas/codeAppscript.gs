@@ -947,6 +947,10 @@ function readFamilySheetData(ss) {
   }
   
   var rows = sheet.getRange("A4:T").getValues();
+  // [HUB] Đọc thêm bằng getDisplayValues() cho các cột ngày CCCD/Hộ chiếu — trả về đúng
+  // CHUỖI hiển thị trên Sheet (WYSIWYG), không đi qua Date object nữa nên không còn phụ
+  // thuộc múi giờ project Apps Script → hết lệch ngày dù project để múi giờ nào đi nữa.
+  var displayRows = sheet.getRange("A4:T").getDisplayValues();
   Logger.log("📖 readFamilySheetData: Số dòng: " + rows.length);
   
   for (var i = 0; i < rows.length; i++) {
@@ -962,6 +966,13 @@ function readFamilySheetData(ss) {
       }
       return dateVal.toString();
     };
+
+    // [HUB] Chuỗi hiển thị thô cho cột ngày CCCD/Hộ chiếu — dùng display value trực tiếp,
+    // chỉ fallback về "-" nếu ô thực sự trống (getDisplayValues() luôn trả về string, kể cả "").
+    var dv = function(val) {
+      var s = (val || "").toString().trim();
+      return s === "" ? "-" : s;
+    };
     
     family.push({
       nickname: rows[i][0] || "-",
@@ -972,14 +983,14 @@ function readFamilySheetData(ss) {
       dienthoai: rows[i][5] || "-",
       cccd: {
         so: rows[i][6] || "-",
-        ngaycap: rows[i][7] || "-",
-        ngayhethan: rows[i][8] || "-",
+        ngaycap: dv(displayRows[i][7]),
+        ngayhethan: dv(displayRows[i][8]),
         noicap: rows[i][9] || "-"
       },
       hochieu: {
         so: rows[i][10] || "-",
-        ngaycap: rows[i][11] || "-",
-        ngayhethan: rows[i][12] || "-",
+        ngaycap: dv(displayRows[i][11]),
+        ngayhethan: dv(displayRows[i][12]),
         noicap: rows[i][13] || "-"
       },
       bhyt: rows[i][14] || "-",

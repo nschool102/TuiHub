@@ -71,11 +71,16 @@
                         <option value="VOI">VOI</option>
                     </select>
                 </div>
-                <!-- [HUB] Đánh dấu khoản chi này CON CỢP đã trả cho sinh hoạt chung — ghi "CON CỢP"
-                     vào cột F (GHI CHÚ 2), ưu tiên hơn lựa chọn NHÍM/VOI nếu cả 2 cùng áp dụng. -->
+                <!-- [HUB] Đánh dấu khoản chi này ai đã trả cho sinh hoạt chung — ghi "CON CỢP" hoặc
+                     "MÌNH" vào cột F (GHI CHÚ 2), 2 ô loại trừ lẫn nhau, ưu tiên hơn lựa chọn
+                     NHÍM/VOI nếu Type = "Giáo dục" cũng đang chọn cùng lúc. -->
                 <div class="form-group" style="display:flex; align-items:center; gap:8px;">
                     <input type="checkbox" id="chi-concop-checkbox" style="width:18px; height:18px;">
                     <label for="chi-concop-checkbox" style="margin:0;">CON CỢP đã trả khoản này (cho sinh hoạt chung)</label>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="chi-minh-checkbox" style="width:18px; height:18px;">
+                    <label for="chi-minh-checkbox" style="margin:0;">MÌNH đã trả khoản này (cho sinh hoạt chung)</label>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
                     <div class="form-group">
@@ -246,12 +251,29 @@
                     <span>📊</span> Thống kê thời gian
                 </h3>
                 
-                <div class="form-group">
-                    <select id="stat-time-period" class="form-control">
-                        <option value="month" selected>Tháng này</option>
-                        <option value="year">Năm nay</option>
-                        <option value="all">Tất cả</option>
-                    </select>
+                <div class="form-group" style="display:flex; gap:10px;">
+                    <div style="flex:1">
+                        <label style="font-size:12px; display:block; margin-bottom:4px;">Tháng</label>
+                        <select id="stat-thang" class="form-control">
+                            <option value="0" selected>None (Cả năm)</option>
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-size:12px; display:block; margin-bottom:4px;">Năm</label>
+                        <select id="stat-nam" class="form-control"></select>
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
@@ -281,6 +303,7 @@
                 <div class="chart-container" style="height: 180px;">
                     <canvas id="chart-stat-bar"></canvas>
                 </div>
+                <div id="chart-stat-bar-legend" style="margin-top:10px;"></div>
                 
                 <h4 style="margin: 15px 0 10px 0; color: var(--text-color); font-size: 0.95rem;">📊 Tỷ lệ thời gian</h4>
                 <div class="chart-container" style="height: 180px;">
@@ -383,6 +406,54 @@
         </div>
     </div>
     <!-- end TAB THỐNG KÊ -->
+
+    <!-- [HUB] TAB CON CÁI (mới) -->
+    <div id="tab-concai" class="tab-content">
+        <div class="card">
+            <h3>👶 Thống Kê Chi Cho Con Cái</h3>
+            <div class="form-group" style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label style="font-size:12px; display:block; margin-bottom:4px;">Tháng</label>
+                    <select id="cc-thang" class="form-control">
+                        <option value="0" selected>None (Cả năm)</option>
+                        <option value="1">Tháng 1</option>
+                        <option value="2">Tháng 2</option>
+                        <option value="3">Tháng 3</option>
+                        <option value="4">Tháng 4</option>
+                        <option value="5">Tháng 5</option>
+                        <option value="6">Tháng 6</option>
+                        <option value="7">Tháng 7</option>
+                        <option value="8">Tháng 8</option>
+                        <option value="9">Tháng 9</option>
+                        <option value="10">Tháng 10</option>
+                        <option value="11">Tháng 11</option>
+                        <option value="12">Tháng 12</option>
+                    </select>
+                </div>
+                <div style="flex:1">
+                    <label style="font-size:12px; display:block; margin-bottom:4px;">Năm</label>
+                    <select id="cc-nam" class="form-control"></select>
+                </div>
+            </div>
+            <button type="button" id="cc-submit-btn" class="btn" style="margin-top:10px; width:100%;">👶 Xem thống kê</button>
+        </div>
+
+        <div class="card">
+            <h4 id="cc-kids-title" style="margin:0 0 10px;">Chi cho con cái</h4>
+            <p style="font-size:11px; opacity:0.7; margin:0 0 8px;">Liệt kê mọi khoản Chi (không giới hạn Type) có Ghi chú 2 là NHÍM hoặc VOI.</p>
+            <div id="cc-kids-table-wrap"></div>
+        </div>
+
+        <!-- [HUB] Chart 5 hạng mục: Giáo dục NHÍM/VOI, Khác NHÍM/VOI, MÌNH -->
+        <div class="card">
+            <h4 id="cc-breakdown-title" style="margin:0 0 10px;">So sánh chi tiêu theo đối tượng</h4>
+            <div class="chart-container" style="height:280px;">
+                <canvas id="cc-chart-breakdown"></canvas>
+            </div>
+            <div id="cc-breakdown-legend" style="margin-top:14px;"></div>
+        </div>
+    </div>
+    <!-- end TAB CON CÁI -->
 
     <!-- TAB FAMILY -->
     <div id="tab-family" class="tab-content">
